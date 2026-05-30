@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-void SaveDiscipline(const Discipline& discipline){
+void SaveDiscipline(const models::Discipline& discipline){
     json data = {
         {"Id", discipline.Id},
         {"Name", discipline.Name},

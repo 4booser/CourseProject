@@ -1,6 +1,7 @@
 #include "repositories/teacher_repository.h"
 #include "headers/teacher.h"
 #include "models.h"
+#include <iostream>
 
 using namespace std;
 
@@ -8,9 +9,9 @@ void HandleTeacherCreate(){
     models::Teacher teacher;
     
     cout << endl << "Введiть ПIБ: "; 
-    cin >> teacher.FullName;
+    std::getline(std::cin, teacher.FullName);
     cout << endl << "Введiть цифрову комiссiю: ";
-    cin >> teacher.DigitalCommission;
+    std::getline(std::cin, teacher.DigitalCommission);
     cout << endl << "Введiть максимальну кiлькiсть годин: ";
     cin >> teacher.Quota;
     

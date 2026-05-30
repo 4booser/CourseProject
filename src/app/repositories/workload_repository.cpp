@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-void SaveWorkload(const Workload& workload){
+void SaveWorkload(const models::Workload& workload){
     json data ={
         {"Id", workload.Id},
         {"TeachersIds", workload.TeacherIds},

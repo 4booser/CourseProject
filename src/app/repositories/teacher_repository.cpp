@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-void SaveTeacher(const Teacher& teacher){
+void SaveTeacher(const models::Teacher& teacher){
     json data ={
         {"Id", teacher.Id},
         {"FullName", teacher.FullName},

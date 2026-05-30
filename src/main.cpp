@@ -1,4 +1,4 @@
-#include "app/repositories/teacher.cpp"
+#include "headers/teacher.h"
 #include <exception>
 #include <iostream>
 #include <cstdlib>
@@ -12,13 +12,14 @@ system("chcp 65001 > nul");
 
     //system("chcp 65001>nul");
 
-    unsigned short choice;
+    unsigned short object;
+    unsigned short option;
 
     do{
         ui::ShowObjects();
 
         try{
-            std::cin >> choice;
+            std::cin >> object;
 
         }
         catch(std::exception exception){
@@ -26,10 +27,15 @@ system("chcp 65001 > nul");
         }
         
 
-        switch(choice) {
+        switch(object) {
             case 1:
                 ui::ShowOptions();
-                HandleTeacherCreate();
+                cin >> option;
+                
+                switch(option){
+                    case 1:
+                    HandleTeacherCreate();
+                }
                 break;
             case 2:
 
