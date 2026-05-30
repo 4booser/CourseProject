@@ -6,19 +6,16 @@
 
 using json = nlohmann::json;
 
-void SaveGroup(const models::Group& group){
+bool SaveGroup(const models::Group& group){
     json data = {
-        {"Id", group.Id},
-        {"Name", group.Name},
-        {"Course", group.Course},
-        {"Speciality", group.Speciality}
+        {"Id", group.id},
+        {"Name", group.name},
+        {"Course", group.course},
+        {"Speciality", group.speciality}
     };
     std::ofstream file("Groups.json");
 
-    if (!file.is_open())
-    {
-        return;
-    }
+    if (!file.is_open()){ return false; }
     file << data.dump(2);
 }
 

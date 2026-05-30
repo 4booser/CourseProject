@@ -7,24 +7,14 @@
 void HandleTeacherCreate(){
     models::Teacher teacher{};
 
-    std::cout << "\nВведiть ID викладача: ";
-    while (!(std::cin >> teacher.Id))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Помилка. Введiть число для ID: ";
-    }
-
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
     std::cout << "Введiть ПIБ: ";
-    std::getline(std::cin, teacher.FullName);
+    std::getline(std::cin, teacher.full_name);
 
     std::cout << "Введiть цифрову комiсiю: ";
-    std::getline(std::cin, teacher.DigitalCommission);
+    std::getline(std::cin, teacher.digital_commission);
 
     std::cout << "Введiть максимальну кiлькiсть годин: ";
-    while (!(std::cin >> teacher.Quota))
+    while (!(std::cin >> teacher.quota))
     {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');

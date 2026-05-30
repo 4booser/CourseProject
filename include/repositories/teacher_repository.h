@@ -3,7 +3,9 @@
 #include "models.h"
 #include <vector>
 
-void SaveTeacher(const models::Teacher& teacher);
+unsigned short GetNextTeacherId();
+
+bool SaveTeacher(const models::Teacher& teacher);
 std::vector<models::Teacher> GetTeachers();
-void EditTeacher(unsigned short teacher_id);
-void DeleteTeacher(unsigned short teacher_id);
+bool EditTeacher(unsigned short& id);
+bool DeleteTeacher(unsigned short& id);

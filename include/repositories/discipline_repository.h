@@ -3,8 +3,10 @@
 #include "models.h"
 #include <vector>
 
-void SaveDiscipline(const models::Discipline& discipline);
+unsigned short GetNextDisciplineId();
+
+bool SaveDiscipline(const models::Discipline& discipline);
 std::vector<models::Discipline> GetDisciplines();
-void EditDiscipline(unsigned short discipline_id);
-void DeleteDiscipline(unsigned short discipline_id);
+bool EditDiscipline(unsigned short& id);
+bool DeleteDiscipline(unsigned short& id);
 

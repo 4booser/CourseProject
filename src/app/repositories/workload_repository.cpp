@@ -6,18 +6,18 @@
 
 using json = nlohmann::json;
 
-void SaveWorkload(const models::Workload& workload){
+bool SaveWorkload(const models::Workload& workload){
     json data ={
-        {"Id", workload.Id},
-        {"TeachersIds", workload.TeacherIds},
-        {"SubjectId", workload.SubjectId},
-        {"GroupsId", workload.GroupIds},
-        {"Lectures", workload.Lectures},
-        {"PracticalClasses", workload.PracticalClasses},
-        {"LaboratoryClasses", workload.LaboratoryClasses},
-        {"Seminars", workload.Seminars},
-        {"Consultations", workload.Consultations},
-        {"TotalHours", workload.TotalHours}
+        {"Id", workload.id},
+        {"TeachersIds", workload.teacher_ids},
+        {"SubjectId", workload.subject_id},
+        {"GroupsId", workload.group_ids},
+        {"Lectures", workload.lectures},
+        {"PracticalClasses", workload.practical_classes},
+        {"LaboratoryClasses", workload.laboratory_classes},
+        {"Seminars", workload.seminars},
+        {"Consultations", workload.consultations},
+        {"TotalHours", workload.total_hours}
     };
     std::ofstream file("Workloads.json");
 
