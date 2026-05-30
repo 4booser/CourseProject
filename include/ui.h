@@ -1,5 +1,8 @@
 #pragma once
 
-void ShowObjects();
-void ShowOptions();
-void ShowOption(int option);
+namespace ui{
+    void ShowObjects();
+    void ShowOptions();
+}
+
+
