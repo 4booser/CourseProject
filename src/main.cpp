@@ -4,6 +4,10 @@
 
 int main()
 {
+#ifdef _WIN32
+system("chcp 65001 > nul");
+#endif
+
     system("chcp 65001>nul");
 
     unsigned short choice;
