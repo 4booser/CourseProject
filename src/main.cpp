@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
-#include "ui.h"
+
+extern void ShowObjects();
 
 int main()
 {
