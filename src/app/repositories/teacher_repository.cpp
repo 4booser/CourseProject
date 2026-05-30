@@ -1,4 +1,4 @@
-#include "include/repository_headers/teacher_repository.h"
+#include "repositories/teacher_repository.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "models.h"

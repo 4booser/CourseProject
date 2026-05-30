@@ -1,4 +1,4 @@
-#include "include/repository_headers/discipline_repository.h"
+#include "repositories/discipline_repository.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "models.h"

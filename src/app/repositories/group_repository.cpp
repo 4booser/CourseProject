@@ -1,4 +1,4 @@
-#include "include/repository_headers/group_repository.h"
+#include "repositories/group_repository.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "models.h"

@@ -1,4 +1,4 @@
-#include "include/repository_headers/workload_repository.h"
+#include "repositories/workload_repository.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "models.h"

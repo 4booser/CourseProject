@@ -1,3 +1,4 @@
+#include "app/repositories/teacher.cpp"
 #include <exception>
 #include <iostream>
 #include <cstdlib>
@@ -27,7 +28,8 @@ system("chcp 65001 > nul");
 
         switch(choice) {
             case 1:
-                
+                ui::ShowOptions();
+                HandleTeacherCreate();
                 break;
             case 2:
 

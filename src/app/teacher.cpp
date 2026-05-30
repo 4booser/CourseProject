@@ -4,14 +4,14 @@
 
 using namespace std;
 
-void Hadnle(){
+void HandleTeacherCreate(){
     models::Teacher teacher;
     
     cout << endl << "Введiть ПIБ: "; 
-    cin << teacher.FullName;
-    cout << endl << "Введiть цифрову комiссiю: "
+    cin >> teacher.FullName;
+    cout << endl << "Введiть цифрову комiссiю: ";
     cin >> teacher.DigitalCommission;
-    cout << endl << "Введiть максимальну кiлькiсть годин: "
+    cout << endl << "Введiть максимальну кiлькiсть годин: ";
     cin >> teacher.Quota;
     
     SaveTeacher(teacher);

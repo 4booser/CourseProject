@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-using namespace models{
+namespace models{
     struct Teacher{
     unsigned short Id;
     std::string FullName;
