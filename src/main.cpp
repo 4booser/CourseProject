@@ -1,22 +1,21 @@
 #include <iostream>
 #include <cstdlib>
-
-extern void ShowObjects();
+#include "ui.h"
 
 int main()
 {
     system("chcp 65001>nul");
 
-    ushort choice;
+    unsigned short choice;
 
     do{
-        ShowObjects();
+        ui::ShowObjects();
 
-        std::cin >> choice
+        std::cin >> choice;
 
         switch(choice) {
             case 1:
-
+                
                 break;
             case 2:
 

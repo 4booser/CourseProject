@@ -3,11 +3,12 @@
 
 using namespace std;
 
-void ShowObjects(){
+namespace ui{
+    void ShowObjects(){
     cout << endl;
     cout << "========== РОЗПОДІЛ УЧБОВОГО НАВАНТАЖЕННЯ ==========" << endl;
     cout << endl;
-    cout << "Оберiть опцiю:" << endl;
+    cout << "Оберiть об`єкт:" << endl;
     cout << endl;
     cout << "1. викладачi" << endl;
     cout << "2. дисципліни" << endl;
@@ -17,4 +18,5 @@ void ShowObjects(){
     cout << "5. Пошук" << endl;
     cout << endl;
     cout << "0. Вихід" << endl;
+    }
 }
