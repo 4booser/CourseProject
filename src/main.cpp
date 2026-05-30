@@ -22,7 +22,7 @@ system("chcp 65001 > nul");
             std::cin >> object;
 
         }
-        catch(std::exception exception){
+        catch(const std::exception& exception){
             
         }
         
@@ -30,7 +30,7 @@ system("chcp 65001 > nul");
         switch(object) {
             case 1:
                 ui::ShowOptions();
-                cin >> option;
+                std::cin >> option;
                 
                 switch(option){
                     case 1:
@@ -54,7 +54,7 @@ system("chcp 65001 > nul");
                 break;
         }
     }
-    while(choice != 0);
+    while(object != 0);
 
     return 0;
 }

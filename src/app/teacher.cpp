@@ -3,17 +3,35 @@
 #include "models.h"
 #include <iostream>
 
-using namespace std;
 
 void HandleTeacherCreate(){
-    models::Teacher teacher;
-    
-    cout << endl << "Введiть ПIБ: "; 
+    models::Teacher teacher{};
+
+    std::cout << "\nВведiть ID викладача: ";
+    while (!(std::cin >> teacher.Id))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Помилка. Введiть число для ID: ";
+    }
+
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::cout << "Введiть ПIБ: ";
     std::getline(std::cin, teacher.FullName);
-    cout << endl << "Введiть цифрову комiссiю: ";
+
+    std::cout << "Введiть цифрову комiсiю: ";
     std::getline(std::cin, teacher.DigitalCommission);
-    cout << endl << "Введiть максимальну кiлькiсть годин: ";
-    cin >> teacher.Quota;
-    
+
+    std::cout << "Введiть максимальну кiлькiсть годин: ";
+    while (!(std::cin >> teacher.Quota))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Помилка. Введiть число для годин: ";
+    }
+
     SaveTeacher(teacher);
+
+    std::cout << "\nВикладача збережено.\n";
 }
