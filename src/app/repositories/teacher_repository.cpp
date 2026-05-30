@@ -1,12 +1,12 @@
-#include "headers/teacher_repository.h"
+#include "include/repository_headers/teacher_repository.h"
 #include <nlohmann/json.hpp>
-#include <ofstream>
+#include <fstream>
 #include "models.h"
 #include <vector>
 
 using json = nlohmann::json;
 
-void SaveTeacher(Teacher teacher){
+void SaveTeacher(const Teacher& teacher){
     json data ={
         {"Id", teacher.Id},
         {"FullName", teacher.FullName},
@@ -19,5 +19,5 @@ void SaveTeacher(Teacher teacher){
     {
         return;
     }
-    data.dump(2);
+    file << data.dump(2);
 }

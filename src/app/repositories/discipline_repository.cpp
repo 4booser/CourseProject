@@ -1,12 +1,12 @@
-#include "repository_headers/discipline_repository.h"
+#include "include/repository_headers/discipline_repository.h"
 #include <nlohmann/json.hpp>
-#include <ofstream>
+#include <fstream>
 #include "models.h"
 #include <vector>
 
 using json = nlohmann::json;
 
-void SaveDiscipline(int discipline){
+void SaveDiscipline(const Discipline& discipline){
     json data = {
         {"Id", discipline.Id},
         {"Name", discipline.Name},
@@ -18,5 +18,5 @@ void SaveDiscipline(int discipline){
     {
         return;
     }
-    data.dump(2);
+    file << data.dump(2);
 }

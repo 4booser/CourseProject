@@ -1,13 +1,15 @@
-#include "repository_headers/group_repository.h"
+#include "include/repository_headers/group_repository.h"
 #include <nlohmann/json.hpp>
-#include <ofstream>
+#include <fstream>
 #include "models.h"
 #include <vector>
 
-void SaveGrouop(Group group){
+using json = nlohmann::json;
+
+void SaveGroup(const Group& group){
     json data = {
         {"Id", group.Id},
-        {"Name", group.Name}
+        {"Name", group.Name},
         {"Course", group.Course},
         {"Speciality", group.Speciality}
     }
@@ -17,6 +19,6 @@ void SaveGrouop(Group group){
     {
         return;
     }
-    data.dump(2);
+    file << data.dump(2);
 }
 

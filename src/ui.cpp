@@ -19,4 +19,16 @@ namespace ui{
     cout << endl;
     cout << "0. Вихід" << endl;
     }
+
+    void ShowOptions(){
+    cout << endl;
+    cout << "Оберiть опцiю:" << endl;
+    cout << endl;
+    cout << "1. Додати" << endl;
+    cout << "2. Прочитати " << endl;
+    cout << "3. Редагувати" << endl;
+    cout << "4. Видалити" << endl;
+    cout << endl;
+    cout << "0. Повернутися до об`єктiв.";
+    }
 }

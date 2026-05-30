@@ -1,3 +1,4 @@
+#include <exception>
 #include <iostream>
 #include <cstdlib>
 #include "ui.h"
@@ -8,14 +9,21 @@ int main()
 system("chcp 65001 > nul");
 #endif
 
-    system("chcp 65001>nul");
+    //system("chcp 65001>nul");
 
     unsigned short choice;
 
     do{
         ui::ShowObjects();
 
-        std::cin >> choice;
+        try{
+            std::cin >> choice;
+
+        }
+        catch(std::exception exception){
+            
+        }
+        
 
         switch(choice) {
             case 1:
