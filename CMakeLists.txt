@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(course_project
     src/main.cpp
     src/ui.cpp
+    src/ui/input.cpp
     src/app/teacher.cpp
     src/app/group.cpp
     src/app/discipline.cpp
