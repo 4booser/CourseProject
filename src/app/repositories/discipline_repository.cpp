@@ -65,14 +65,19 @@ unsigned short GetLastDisciplineId()
     return max_id;
 }
 
-bool SaveDiscipline(models::Discipline& discipline)
+OperationResult SaveDiscipline(models::Discipline& discipline)
 {
     json disciplines = storage::ReadJsonArray(discipline_file_path);
 
     discipline.id = GetLastDisciplineId() + 1;
     disciplines.push_back(BuildDisciplineJson(discipline));
 
-    return storage::WriteJsonArray(discipline_file_path, disciplines);
+    if (!storage::WriteJsonArray(discipline_file_path, disciplines))
+    {
+        return OperationResult::Fail("Не вдалося записати файл дисциплiн.");
+    }
+
+    return OperationResult::Ok();
 }
 
 std::vector<models::Discipline> GetDisciplines()
@@ -113,7 +118,7 @@ std::optional<models::Discipline> GetDisciplineById(unsigned short id)
     return std::nullopt;
 }
 
-bool EditDisciplineById(const unsigned short& id, const models::Discipline& updated_discipline)
+OperationResult EditDisciplineById(const unsigned short& id, const models::Discipline& updated_discipline)
 {
     json disciplines = storage::ReadJsonArray(discipline_file_path);
     bool was_updated = false;
@@ -132,13 +137,18 @@ bool EditDisciplineById(const unsigned short& id, const models::Discipline& upda
 
     if (!was_updated)
     {
-        return false;
+        return OperationResult::Fail("Дисциплiну з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(discipline_file_path, disciplines);
+    if (!storage::WriteJsonArray(discipline_file_path, disciplines))
+    {
+        return OperationResult::Fail("Не вдалося записати файл дисциплiн.");
+    }
+
+    return OperationResult::Ok();
 }
 
-bool RemoveDisciplineById(const unsigned short& id)
+OperationResult RemoveDisciplineById(const unsigned short& id)
 {
     json disciplines = storage::ReadJsonArray(discipline_file_path);
     bool was_removed = false;
@@ -155,8 +165,13 @@ bool RemoveDisciplineById(const unsigned short& id)
 
     if (!was_removed)
     {
-        return false;
+        return OperationResult::Fail("Дисциплiну з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(discipline_file_path, disciplines);
+    if (!storage::WriteJsonArray(discipline_file_path, disciplines))
+    {
+        return OperationResult::Fail("Не вдалося записати файл дисциплiн.");
+    }
+
+    return OperationResult::Ok();
 }
