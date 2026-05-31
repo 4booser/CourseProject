@@ -10,6 +10,49 @@ using json = nlohmann::json;
 
 const std::string file_path = "Output/Teachers.json";
 
+static bool HasId(const json& object)
+{
+    return object.contains("id") || object.contains("Id");
+}
+
+static unsigned short ReadId(const json& object)
+{
+    if (object.contains("id"))
+    {
+        return object["id"].get<unsigned short>();
+    }
+
+    return object["Id"].get<unsigned short>();
+}
+
+static models::Teacher ParseTeacher(const json& teacher_json)
+{
+    models::Teacher teacher{};
+
+    teacher.id = ReadId(teacher_json);
+    teacher.full_name = teacher_json.contains("full_name")
+        ? teacher_json["full_name"].get<std::string>()
+        : teacher_json["FullName"].get<std::string>();
+    teacher.digital_commission = teacher_json.contains("digital_commission")
+        ? teacher_json["digital_commission"].get<std::string>()
+        : teacher_json["DigitalCommission"].get<std::string>();
+    teacher.quota = teacher_json.contains("quota")
+        ? teacher_json["quota"].get<unsigned int>()
+        : teacher_json["Quota"].get<unsigned int>();
+
+    return teacher;
+}
+
+static json BuildTeacherJson(const models::Teacher& teacher)
+{
+    return {
+        {"id", teacher.id},
+        {"full_name", teacher.full_name},
+        {"digital_commission", teacher.digital_commission},
+        {"quota", teacher.quota}
+    };
+}
+
 unsigned short GetLastTeacherId()
 {
     json teachers = storage::ReadJsonArray(file_path);
@@ -17,9 +60,9 @@ unsigned short GetLastTeacherId()
 
     for (const auto& teacher_json : teachers)
     {
-        if (teacher_json.contains("Id"))
+        if (HasId(teacher_json))
         {
-            max_id = std::max(max_id, teacher_json["Id"].get<unsigned short>());
+            max_id = std::max(max_id, ReadId(teacher_json));
         }
     }
 
@@ -31,15 +74,7 @@ bool SaveTeacher(models::Teacher& teacher)
     json teachers = storage::ReadJsonArray(file_path);
 
     teacher.id = GetLastTeacherId() + 1;
-
-    json teacher_json = {
-        {"Id", teacher.id},
-        {"FullName", teacher.full_name},
-        {"DigitalCommission", teacher.digital_commission},
-        {"Quota", teacher.quota}
-    };
-
-    teachers.push_back(teacher_json);
+    teachers.push_back(BuildTeacherJson(teacher));
 
     return storage::WriteJsonArray(file_path, teachers);
 }
@@ -50,21 +85,17 @@ std::optional<models::Teacher> GetTeacherById(unsigned short id)
 
     for (const auto& teacher_json : teachers)
     {
-        if (!teacher_json.contains("Id")){
+        if (!HasId(teacher_json))
+        {
             continue;
         }
 
-        if (teacher_json["Id"].get<unsigned short>() == id){
-            models::Teacher teacher;
-
-            teacher.id = teacher_json["Id"].get<unsigned short>();
-            teacher.full_name = teacher_json["FullName"].get<std::string>();
-            teacher.digital_commission = teacher_json["DigitalCommission"].get<std::string>();
-            teacher.quota = teacher_json["Quota"].get<unsigned int>();
-
-            return teacher;
+        if (ReadId(teacher_json) == id)
+        {
+            return ParseTeacher(teacher_json);
         }
     }
+
     return std::nullopt;
 }
 
@@ -75,11 +106,11 @@ bool EditTeacherById(const unsigned short& id, const models::Teacher& updated_te
 
     for (auto& teacher_json : teachers)
     {
-        if (teacher_json.contains("Id") && teacher_json["Id"].get<unsigned short>() == id)
+        if (HasId(teacher_json) && ReadId(teacher_json) == id)
         {
-            teacher_json["FullName"] = updated_teacher.full_name;
-            teacher_json["DigitalCommission"] = updated_teacher.digital_commission;
-            teacher_json["Quota"] = updated_teacher.quota;
+            models::Teacher teacher_to_save = updated_teacher;
+            teacher_to_save.id = id;
+            teacher_json = BuildTeacherJson(teacher_to_save);
             was_updated = true;
             break;
         }
@@ -100,7 +131,7 @@ bool DeleteTeacherById(const unsigned short& id)
 
     for (auto it = teachers.begin(); it != teachers.end(); ++it)
     {
-        if (it->contains("Id") && (*it)["Id"].get<unsigned short>() == id)
+        if (HasId(*it) && ReadId(*it) == id)
         {
             teachers.erase(it);
             was_deleted = true;
