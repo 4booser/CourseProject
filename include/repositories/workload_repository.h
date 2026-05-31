@@ -2,10 +2,11 @@
 
 #include "models.h"
 #include <vector>
+#include <optional>
 
 unsigned short GetLastWorkloadId();
 
 bool SaveWorkload(models::Workload& workload);
 std::vector<models::Workload> GetWorkloads();
-bool EditWorkload(unsigned short& id);
-bool DeleteWorkload(unsigned short& id);
+std::optional<models::Workload> GetWorkloadById(unsigned short id);
+bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_workload);
