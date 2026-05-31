@@ -1,6 +1,6 @@
 #include "repositories/teacher_repository.h"
-#include "repositories/workload_repository.h"
 #include "headers/teacher.h"
+#include "services/teacher_service.h"
 #include "ui/input.h"
 #include "ui/table.h"
 #include "models.h"
@@ -18,6 +18,13 @@ void HandleTeacherCreate(){
     teacher.full_name = ui::ReadLine("Введiть ПIБ: ");
     teacher.digital_commission = ui::ReadLine("Введiть цифрову комiсiю: ");
     teacher.quota = ui::ReadUnsignedInt("Введiть максимальну кiлькiсть годин: ");
+
+    OperationResult validation_result = services::ValidateTeacher(teacher);
+    if (!validation_result.success)
+    {
+        std::cout << validation_result.message << '\n';
+        return;
+    }
 
     OperationResult save_result = SaveTeacher(teacher);
     if(!save_result.success){
@@ -63,6 +70,13 @@ void HandleTeacherEdit(const unsigned short& id)
     updated_teacher.digital_commission = ui::ReadLine("Введiть нову цифрову комiсiю: ");
     updated_teacher.quota = ui::ReadUnsignedInt("Введiть нову максимальну кiлькiсть годин: ");
 
+    OperationResult validation_result = services::ValidateTeacher(updated_teacher);
+    if (!validation_result.success)
+    {
+        std::cout << validation_result.message << '\n';
+        return;
+    }
+
     OperationResult edit_result = EditTeacherById(id, updated_teacher);
     if (!edit_result.success)
     {
@@ -75,9 +89,10 @@ void HandleTeacherEdit(const unsigned short& id)
 
 void HandleTeacherDelete(const unsigned short& id)
 {
-    if (HasWorkloadForTeacher(id))
+    OperationResult can_delete_result = services::CanDeleteTeacher(id);
+    if (!can_delete_result.success)
     {
-        std::cout << "Неможливо видалити викладача: вiн використовується в навантаженнi.\n";
+        std::cout << can_delete_result.message << '\n';
         return;
     }
 
