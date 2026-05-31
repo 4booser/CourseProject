@@ -1,65 +1,81 @@
 #include "repositories/workload_repository.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <filesystem>
+#include <optional>
 #include "models.h"
 #include <vector>
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
-const std::string file_path = "Output/Workloads.json";
+const std::string workload_file_path = "Output/Workloads.json";
 
-unsigned short GetLastWorkloadId()
+static json ReadWorkloadsJson()
 {
-    std::ifstream input_file(file_path);
+    std::ifstream input_file(workload_file_path);
 
-    if (!input_file.is_open()) { return 1; }
+    if (!input_file.is_open())
+    {
+        return json::array();
+    }
 
     json workloads;
 
-    try{ input_file >> workloads; }
-    catch (...){ return 1; }
-
-    if (!workloads.is_array() || workloads.empty()) { return 1; }
-
-    const auto& last_workload = workloads.back();
-
-    if (!last_workload.contains("Id")) { return 1; }
-
-    return last_workload["Id"].get<unsigned short>();
-}
-
-bool SaveWorkload(models::Workload& workload)
-{
-    json workloads = json::array();
-
-    fs::path path(file_path);
-    fs::create_directories(path.parent_path());
-
-    std::ifstream input_file(file_path);
-
-    if (input_file.is_open())
+    try
     {
-        try
-        {
-            input_file >> workloads;
-
-            if (!workloads.is_array())
-            {
-                workloads = json::array();
-            }
-        }
-        catch (...)
-        {
-            workloads = json::array();
-        }
-
-        input_file.close();
+        input_file >> workloads;
+    }
+    catch (...)
+    {
+        return json::array();
     }
 
-    workload.id = GetLastWorkloadId() + 1;
+    if (!workloads.is_array())
+    {
+        return json::array();
+    }
 
-    json workload_json = {
+    return workloads;
+}
+
+static bool WriteWorkloadsJson(const json& workloads)
+{
+    fs::path path(workload_file_path);
+    fs::create_directories(path.parent_path());
+
+    std::ofstream output_file(workload_file_path);
+
+    if (!output_file.is_open())
+    {
+        return false;
+    }
+
+    output_file << workloads.dump(2);
+    return true;
+}
+
+static models::Workload ParseWorkload(const json& workload_json)
+{
+    models::Workload workload{};
+
+    workload.id = workload_json["Id"].get<unsigned short>();
+    workload.teacher_ids = workload_json["TeachersIds"].get<std::vector<unsigned short>>();
+    workload.group_ids = workload_json["GroupIds"].get<std::vector<unsigned short>>();
+    workload.subject_id = workload_json["SubjectId"].get<unsigned short>();
+    workload.lectures = workload_json["Lectures"].get<unsigned int>();
+    workload.practical_classes = workload_json["PracticalClasses"].get<unsigned int>();
+    workload.laboratory_classes = workload_json["LaboratoryClasses"].get<unsigned int>();
+    workload.seminars = workload_json["Seminars"].get<unsigned int>();
+    workload.consultations = workload_json["Consultations"].get<unsigned int>();
+    workload.total_hours = workload_json["TotalHours"].get<unsigned int>();
+
+    return workload;
+}
+
+static json BuildWorkloadJson(const models::Workload& workload)
+{
+    return {
         {"Id", workload.id},
         {"TeachersIds", workload.teacher_ids},
         {"GroupIds", workload.group_ids},
@@ -71,16 +87,97 @@ bool SaveWorkload(models::Workload& workload)
         {"Consultations", workload.consultations},
         {"TotalHours", workload.total_hours}
     };
+}
 
-    workloads.push_back(workload_json);
+unsigned short GetLastWorkloadId()
+{
+    json workloads = ReadWorkloadsJson();
 
-    std::ofstream output_file(file_path);
+    if (workloads.empty())
+    {
+        return 0;
+    }
 
-    if (!output_file.is_open())
+    const auto& last_workload = workloads.back();
+
+    if (!last_workload.contains("Id"))
+    {
+        return 0;
+    }
+
+    return last_workload["Id"].get<unsigned short>();
+}
+
+bool SaveWorkload(models::Workload& workload)
+{
+    json workloads = ReadWorkloadsJson();
+
+    workload.id = GetLastWorkloadId() + 1;
+
+    workloads.push_back(BuildWorkloadJson(workload));
+
+    return WriteWorkloadsJson(workloads);
+}
+
+std::vector<models::Workload> GetWorkloads()
+{
+    std::vector<models::Workload> result;
+    json workloads = ReadWorkloadsJson();
+
+    for (const auto& workload_json : workloads)
+    {
+        if (!workload_json.contains("Id"))
+        {
+            continue;
+        }
+
+        result.push_back(ParseWorkload(workload_json));
+    }
+
+    return result;
+}
+
+std::optional<models::Workload> GetWorkloadById(unsigned short id)
+{
+    json workloads = ReadWorkloadsJson();
+
+    for (const auto& workload_json : workloads)
+    {
+        if (!workload_json.contains("Id"))
+        {
+            continue;
+        }
+
+        if (workload_json["Id"].get<unsigned short>() == id)
+        {
+            return ParseWorkload(workload_json);
+        }
+    }
+
+    return std::nullopt;
+}
+
+bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_workload)
+{
+    json workloads = ReadWorkloadsJson();
+    bool was_updated = false;
+
+    for (auto& workload_json : workloads)
+    {
+        if (workload_json.contains("Id") && workload_json["Id"].get<unsigned short>() == id)
+        {
+            models::Workload workload_to_save = updated_workload;
+            workload_to_save.id = id;
+            workload_json = BuildWorkloadJson(workload_to_save);
+            was_updated = true;
+            break;
+        }
+    }
+
+    if (!was_updated)
     {
         return false;
     }
 
-    output_file << workloads.dump(2);
-    return true;
+    return WriteWorkloadsJson(workloads);
 }
