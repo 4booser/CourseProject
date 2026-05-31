@@ -7,20 +7,40 @@
 
 #include <algorithm>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
 namespace
 {
+    constexpr unsigned int MaxWorkloadHours = 1000;
+
     bool ContainsId(const std::vector<unsigned short>& ids, unsigned short id)
     {
         return std::find(ids.begin(), ids.end(), id) != ids.end();
     }
 
-    unsigned int GetTeacherAssignedHours(unsigned short teacher_id, unsigned short excluded_workload_id)
+    bool HasDuplicates(const std::vector<unsigned short>& ids)
+    {
+        std::set<unsigned short> unique_ids;
+
+        for (unsigned short id : ids)
+        {
+            if (!unique_ids.insert(id).second)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    unsigned int GetTeacherAssignedHours(
+        const std::vector<models::Workload>& workloads,
+        unsigned short teacher_id,
+        unsigned short excluded_workload_id)
     {
         unsigned int total = 0;
-        std::vector<models::Workload> workloads = GetWorkloads();
 
         for (const models::Workload& workload : workloads)
         {
@@ -38,10 +58,12 @@ namespace
         return total;
     }
 
-    unsigned int GetDisciplineAssignedHours(unsigned short discipline_id, unsigned short excluded_workload_id)
+    unsigned int GetDisciplineAssignedHours(
+        const std::vector<models::Workload>& workloads,
+        unsigned short discipline_id,
+        unsigned short excluded_workload_id)
     {
         unsigned int total = 0;
-        std::vector<models::Workload> workloads = GetWorkloads();
 
         for (const models::Workload& workload : workloads)
         {
@@ -66,6 +88,11 @@ namespace
             return OperationResult::Fail("Потрiбно вказати хоча б одного викладача.");
         }
 
+        if (HasDuplicates(teacher_ids))
+        {
+            return OperationResult::Fail("Список викладачiв не може мiстити дублiкати Id.");
+        }
+
         for (unsigned short teacher_id : teacher_ids)
         {
             if (!GetTeacherById(teacher_id).has_value())
@@ -82,6 +109,11 @@ namespace
         if (group_ids.empty())
         {
             return OperationResult::Fail("Потрiбно вказати хоча б одну групу.");
+        }
+
+        if (HasDuplicates(group_ids))
+        {
+            return OperationResult::Fail("Список груп не може мiстити дублiкати Id.");
         }
 
         for (unsigned short group_id : group_ids)
@@ -105,17 +137,25 @@ namespace
         return OperationResult::Ok();
     }
 
-    OperationResult ValidateTotalHours(const models::Workload& workload)
+    OperationResult ValidateHoursRange(const models::Workload& workload)
     {
         if (workload.total_hours == 0)
         {
             return OperationResult::Fail("Кiлькiсть годин навантаження не може бути 0.");
         }
 
+        if (workload.total_hours > MaxWorkloadHours)
+        {
+            return OperationResult::Fail("Кiлькiсть годин навантаження занадто велика.");
+        }
+
         return OperationResult::Ok();
     }
 
-    OperationResult ValidateTeacherQuotas(const models::Workload& workload, unsigned short excluded_workload_id)
+    OperationResult ValidateTeacherQuotas(
+        const std::vector<models::Workload>& workloads,
+        const models::Workload& workload,
+        unsigned short excluded_workload_id)
     {
         for (unsigned short teacher_id : workload.teacher_ids)
         {
@@ -126,7 +166,7 @@ namespace
                 return OperationResult::Fail("Викладача з Id " + std::to_string(teacher_id) + " не iснує.");
             }
 
-            unsigned int assigned_hours = GetTeacherAssignedHours(teacher_id, excluded_workload_id);
+            unsigned int assigned_hours = GetTeacherAssignedHours(workloads, teacher_id, excluded_workload_id);
             unsigned int new_total = assigned_hours + workload.total_hours;
 
             if (new_total > teacher->quota)
@@ -142,7 +182,10 @@ namespace
         return OperationResult::Ok();
     }
 
-    OperationResult ValidateDisciplineQuota(const models::Workload& workload, unsigned short excluded_workload_id)
+    OperationResult ValidateDisciplineQuota(
+        const std::vector<models::Workload>& workloads,
+        const models::Workload& workload,
+        unsigned short excluded_workload_id)
     {
         std::optional<models::Discipline> discipline = GetDisciplineById(workload.discipline_id);
 
@@ -151,7 +194,7 @@ namespace
             return OperationResult::Fail("Дисциплiни з Id " + std::to_string(workload.discipline_id) + " не iснує.");
         }
 
-        unsigned int assigned_hours = GetDisciplineAssignedHours(workload.discipline_id, excluded_workload_id);
+        unsigned int assigned_hours = GetDisciplineAssignedHours(workloads, workload.discipline_id, excluded_workload_id);
         unsigned int new_total = assigned_hours + workload.total_hours;
 
         if (new_total > discipline->quota)
@@ -171,6 +214,8 @@ namespace services
 {
     OperationResult ValidateWorkload(const models::Workload& workload, unsigned short excluded_workload_id)
     {
+        std::vector<models::Workload> workloads = GetWorkloads();
+
         OperationResult result = ValidateTeacherIds(workload.teacher_ids);
         if (!result.success) { return result; }
 
@@ -180,13 +225,13 @@ namespace services
         result = ValidateDisciplineId(workload.discipline_id);
         if (!result.success) { return result; }
 
-        result = ValidateTotalHours(workload);
+        result = ValidateHoursRange(workload);
         if (!result.success) { return result; }
 
-        result = ValidateTeacherQuotas(workload, excluded_workload_id);
+        result = ValidateTeacherQuotas(workloads, workload, excluded_workload_id);
         if (!result.success) { return result; }
 
-        return ValidateDisciplineQuota(workload, excluded_workload_id);
+        return ValidateDisciplineQuota(workloads, workload, excluded_workload_id);
     }
 
     OperationResult CreateWorkload(models::Workload& workload)
