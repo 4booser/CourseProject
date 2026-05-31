@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "teacher_ids": [1],
+    "group_ids": [1],
+    "discipline_id": 1,
+    "lectures": 20,
+    "practical_classes": 30,
+    "laboratory_classes": 20,
+    "seminars": 10,
+    "consultations": 5,
+    "total_hours": 85
+  }
+]
