@@ -113,6 +113,21 @@ system("chcp 65001 > nul");
                     case 1:
                     HandleWorkloadCreate();
                         break;
+                    case 2:
+                    HandleWorkloadsGet();
+                        break;
+                    case 3:
+                    HandleWorkloadsGet();
+                    std::cout << "Введiть Id навантаження для редагування: ";
+                    std::cin >> id;
+                    HandleWorkloadEdit(id);
+                        break;
+                    case 4:
+                    HandleWorkloadsGet();
+                    std::cout << "Введiть Id навантаження для видалення: ";
+                    std::cin >> id;
+                    HandleWorkloadDelete(id);
+                        break;
                 }
                 break;
             case 5:
