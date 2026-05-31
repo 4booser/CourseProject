@@ -1,4 +1,5 @@
 #include "repositories/teacher_repository.h"
+#include "repositories/workload_repository.h"
 #include "headers/teacher.h"
 #include "models.h"
 #include <string>
@@ -98,6 +99,12 @@ void HandleTeacherEdit(const unsigned short& id)
 
 void HandleTeacherDelete(const unsigned short& id)
 {
+    if (HasWorkloadForTeacher(id))
+    {
+        std::cout << "Неможливо видалити викладача: вiн використовується в навантаженнi.\n";
+        return;
+    }
+
     if (!DeleteTeacherById(id))
     {
         std::cout << "Викладача з таким Id не знайдено або сталася помилка.\n";
