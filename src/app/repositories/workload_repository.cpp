@@ -181,3 +181,26 @@ bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_
 
     return WriteWorkloadsJson(workloads);
 }
+
+bool RemoveWorkloadById(const unsigned short& id)
+{
+    json workloads = ReadWorkloadsJson();
+    bool was_removed = false;
+
+    for (auto it = workloads.begin(); it != workloads.end(); ++it)
+    {
+        if (it->contains("Id") && (*it)["Id"].get<unsigned short>() == id)
+        {
+            workloads.erase(it);
+            was_removed = true;
+            break;
+        }
+    }
+
+    if (!was_removed)
+    {
+        return false;
+    }
+
+    return WriteWorkloadsJson(workloads);
+}
