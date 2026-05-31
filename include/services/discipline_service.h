@@ -6,5 +6,7 @@
 namespace services
 {
     OperationResult ValidateDiscipline(const models::Discipline& discipline);
-    OperationResult CanDeleteDiscipline(unsigned short discipline_id);
+    OperationResult CreateDiscipline(models::Discipline& discipline);
+    OperationResult UpdateDiscipline(unsigned short discipline_id, const models::Discipline& discipline);
+    OperationResult DeleteDiscipline(unsigned short discipline_id);
 }
