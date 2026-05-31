@@ -1,187 +1,194 @@
-# CourseProject
+# CourseProject — розподіл учбового навантаження
 
-Console C++20 application for managing educational workload distribution.
+CourseProject — це консольна C++20 програма для ведення навчальних даних коледжу/кафедри та розподілу учбового навантаження між викладачами, групами і дисциплінами.
 
-The project stores data in JSON files and provides CRUD operations for teachers, groups, disciplines and workloads.
+Проєкт зберігає дані у локальних JSON-файлах, не потребує бази даних, сервера або інтернету під час роботи. Основна ідея програми — дати простий консольний інструмент для створення, перегляду, редагування, видалення і пошуку навчальних сутностей.
 
-## Features
+---
 
-- Teachers CRUD
-- Groups CRUD
-- Disciplines CRUD
-- Workloads CRUD
-- Search across teachers, groups, disciplines and workloads
-- Table-based console output
-- Safe numeric input helpers
-- Workload relation validation
-- Teacher quota validation
-- Discipline hours validation
-- JSON file storage in `Output/`
-- CMake build configuration
+## Зміст
 
-## Architecture
+- [Для чого потрібен проєкт](#для-чого-потрібен-проєкт)
+- [Коротко про можливості](#коротко-про-можливості)
+- [Головні сутності](#головні-сутності)
+- [Повний функціонал](#повний-функціонал)
+- [Архітектура проєкту](#архітектура-проєкту)
+- [Структура директорій](#структура-директорій)
+- [Формат збереження даних](#формат-збереження-даних)
+- [Залежності](#залежності)
+- [Запуск готової програми](#запуск-готової-програми)
+- [Збірка на Linux](#збірка-на-linux)
+- [Збірка на Windows](#збірка-на-windows)
+- [Крос-компіляція Windows `.exe` з Linux](#крос-компіляція-windows-exe-з-linux)
+- [Скрипти збірки](#скрипти-збірки)
+- [Типовий сценарій роботи](#типовий-сценарій-роботи)
+- [Валідація і бізнес-правила](#валідація-і-бізнес-правила)
+- [Пошук](#пошук)
+- [Типові помилки і рішення](#типові-помилки-і-рішення)
+- [Що можна покращити в майбутньому](#що-можна-покращити-в-майбутньому)
 
-The project is organized by layers:
+---
 
-```text
-UI
- ↓
-Service
- ↓
-Repository
- ↓
-Storage
-```
+## Для чого потрібен проєкт
 
-### UI
+У навчальному закладі потрібно вести облік:
 
-Responsible for console input/output:
+- викладачів;
+- навчальних груп;
+- дисциплін;
+- кількості годин;
+- розподілу годин між викладачами, групами і дисциплінами.
 
-```text
-src/ui.cpp
-src/ui/input.cpp
-src/ui/menu_handlers.cpp
-src/ui/search.cpp
-src/app/*.cpp
-```
+Цей проєкт автоматизує базову частину такої роботи. Замість ручного ведення таблиць користувач може через меню додавати записи, переглядати їх у таблицях, редагувати, видаляти та створювати навчальне навантаження.
 
-### Service
+Програма підходить як курсова робота, тому що демонструє:
 
-Responsible for business rules and validation:
+- роботу з C++20;
+- структурування коду по файлах і папках;
+- роботу з моделями даних;
+- CRUD-операції;
+- валідацію введення;
+- роботу з JSON;
+- розділення логіки на UI, service, repository і storage шари;
+- просту архітектуру без бази даних.
 
-```text
-src/services/teacher_service.cpp
-src/services/group_service.cpp
-src/services/discipline_service.cpp
-src/services/workload_service.cpp
-```
+---
 
-Examples of service rules:
+## Коротко про можливості
 
-- teacher full name cannot be empty;
-- teacher quota must be greater than 0;
-- group course must be in range 1-4;
-- discipline hours must be greater than 0;
-- workload cannot reference missing teachers, groups or disciplines;
-- workload cannot exceed teacher quota;
-- workload cannot exceed discipline hours;
-- related entities cannot be deleted while they are used by workloads.
+Програма підтримує:
 
-### Repository
+- додавання викладачів;
+- перегляд викладачів;
+- редагування викладачів;
+- видалення викладачів;
+- додавання дисциплін;
+- перегляд дисциплін;
+- редагування дисциплін;
+- видалення дисциплін;
+- додавання груп;
+- перегляд груп;
+- редагування груп;
+- видалення груп;
+- додавання навчального навантаження;
+- перегляд навчального навантаження;
+- редагування навчального навантаження;
+- видалення навчального навантаження;
+- пошук по всіх основних сутностях;
+- автоматичне збереження даних у JSON;
+- автоматичне створення директорії `Output/`;
+- перевірку коректності введених чисел;
+- перевірку існування пов'язаних записів;
+- захист від видалення записів, які вже використовуються в навантаженні;
+- контроль квоти годин викладача;
+- контроль ліміту годин дисципліни;
+- табличне виведення даних у консолі.
 
-Responsible for CRUD operations:
+---
 
-```text
-src/app/repositories/teacher_repository.cpp
-src/app/repositories/group_repository.cpp
-src/app/repositories/discipline_repository.cpp
-src/app/repositories/workload_repository.cpp
-```
+## Головні сутності
 
-Repository mutation methods return `OperationResult`:
+У проєкті є 4 основні моделі.
 
-```cpp
-struct OperationResult
-{
-    bool success = false;
-    std::string message;
-};
-```
+### 1. Teacher — викладач
 
-### Storage
+Викладач містить:
 
-Responsible for reading and writing JSON arrays:
+| Поле | Тип | Значення |
+|---|---:|---|
+| `id` | `unsigned short` | Унікальний ідентифікатор викладача |
+| `full_name` | `std::string` | Повне ім'я викладача |
+| `digital_commission` | `std::string` | Назва цифрової комісії / циклової комісії |
+| `quota` | `unsigned int` | Максимальна кількість годин, яку можна призначити викладачу |
 
-```text
-src/storage/json_storage.cpp
-```
-
-## Requirements
-
-- C++20 compiler
-- CMake 3.20+
-- nlohmann/json
-
-On Arch Linux:
-
-```bash
-sudo pacman -S cmake gcc nlohmann-json
-```
-
-On Ubuntu:
-
-```bash
-sudo apt-get install cmake g++ nlohmann-json3-dev
-```
-
-## Build
-
-```bash
-cmake -S . -B build
-cmake --build build
-```
-
-## Run
-
-```bash
-./build/course_project
-```
-
-## Runtime data
-
-The application creates JSON files in the `Output/` directory:
-
-```text
-Output/Teachers.json
-Output/Groups.json
-Output/Disciplines.json
-Output/Workloads.json
-```
-
-`Output/` is ignored by Git because it contains local runtime data.
-
-## JSON format
-
-New records are written in `snake_case`.
-
-### Teacher
+Приклад:
 
 ```json
 {
   "id": 1,
   "full_name": "Іваненко Іван Іванович",
-  "digital_commission": "Software",
+  "digital_commission": "Цифрові технології",
+  "quota": 180
+}
+```
+
+---
+
+### 2. Discipline — дисципліна
+
+Дисципліна містить:
+
+| Поле | Тип | Значення |
+|---|---:|---|
+| `id` | `unsigned short` | Унікальний ідентифікатор дисципліни |
+| `name` | `std::string` | Назва дисципліни |
+| `quota` | `unsigned int` | Загальна кількість годин дисципліни |
+
+Приклад:
+
+```json
+{
+  "id": 1,
+  "name": "Програмування",
   "quota": 120
 }
 ```
 
-### Group
+---
+
+### 3. Group — навчальна група
+
+Група містить:
+
+| Поле | Тип | Значення |
+|---|---:|---|
+| `id` | `unsigned short` | Унікальний ідентифікатор групи |
+| `name` | `std::string` | Назва групи |
+| `course` | `unsigned short` | Курс навчання |
+| `speciality` | `std::string` | Спеціальність |
+
+Приклад:
 
 ```json
 {
   "id": 1,
   "name": "ПР-214",
   "course": 2,
-  "speciality": "Software Engineering"
+  "speciality": "Інженерія програмного забезпечення"
 }
 ```
 
-### Discipline
+---
+
+### 4. Workload — навчальне навантаження
+
+Навантаження зв'язує викладачів, групи і дисципліну.
+
+| Поле | Тип | Значення |
+|---|---:|---|
+| `id` | `unsigned short` | Унікальний ідентифікатор навантаження |
+| `teacher_ids` | `std::vector<unsigned short>` | Список Id викладачів |
+| `group_ids` | `std::vector<unsigned short>` | Список Id груп |
+| `discipline_id` | `unsigned short` | Id дисципліни |
+| `lectures` | `unsigned int` | Лекційні години |
+| `practical_classes` | `unsigned int` | Практичні години |
+| `laboratory_classes` | `unsigned int` | Лабораторні години |
+| `seminars` | `unsigned int` | Семінарські години |
+| `consultations` | `unsigned int` | Години консультацій |
+| `total_hours` | `unsigned int` | Загальна кількість годин |
+
+`total_hours` рахується автоматично як сума:
+
+```text
+lectures + practical_classes + laboratory_classes + seminars + consultations
+```
+
+Приклад:
 
 ```json
 {
   "id": 1,
-  "name": "Programming",
-  "quota": 120
-}
-```
-
-### Workload
-
-```json
-{
-  "id": 1,
-  "teacher_ids": [1],
+  "teacher_ids": [1, 2],
   "group_ids": [1],
   "discipline_id": 1,
   "lectures": 20,
@@ -193,13 +200,1109 @@ New records are written in `snake_case`.
 }
 ```
 
-Old local JSON files with PascalCase keys are still readable for backward compatibility.
+---
 
-## Recommended local check
+## Повний функціонал
+
+### Головне меню
+
+Після запуску програма показує головне меню:
+
+```text
+========== РОЗПОДІЛ УЧБОВОГО НАВАНТАЖЕННЯ ==========
+
+Оберiть об`єкт:
+
+1. Викладачi
+2. Дисциплiни
+3. Групи
+4. Навантаження
+
+5. Пошук
+
+0. Вихiд
+-----------------------------------------------------
+```
+
+Користувач обирає об'єкт, з яким хоче працювати.
+
+---
+
+### CRUD-меню
+
+Для викладачів, дисциплін, груп і навантаження використовується однакова логіка CRUD-меню:
+
+```text
+-----------------------------------------------------
+Оберiть опцiю:
+
+1. Додати
+2. Переглянути
+3. Редагувати
+4. Видалити
+
+0. Повернутися до об`єктiв
+-----------------------------------------------------
+```
+
+CRUD означає:
+
+| Операція | Значення |
+|---|---|
+| Create | створити запис |
+| Read | переглянути записи |
+| Update | відредагувати запис |
+| Delete | видалити запис |
+
+---
+
+### Функціонал викладачів
+
+Для викладачів доступно:
+
+- додавання нового викладача;
+- перегляд усіх викладачів у таблиці;
+- редагування викладача за `id`;
+- видалення викладача за `id`;
+- пошук викладачів за ПІБ або цифровою комісією;
+- перевірка, що ПІБ не порожнє;
+- перевірка, що цифрова комісія не порожня;
+- перевірка, що квота годин більше 0;
+- заборона видалення викладача, якщо він використовується у навчальному навантаженні.
+
+Таблиця викладачів містить:
+
+```text
+ID   Full name                 Commission          Quota
+------------------------------------------------------------
+1    Іваненко Іван Іванович    Цифрові технології  180
+```
+
+---
+
+### Функціонал дисциплін
+
+Для дисциплін доступно:
+
+- додавання дисципліни;
+- перегляд дисциплін;
+- редагування дисципліни за `id`;
+- видалення дисципліни за `id`;
+- пошук дисциплін за назвою;
+- перевірка, що назва дисципліни не порожня;
+- перевірка, що кількість годин більше 0;
+- заборона видалення дисципліни, якщо вона використовується у навантаженні.
+
+Таблиця дисциплін містить:
+
+```text
+ID   Name                           Hours
+---------------------------------------------
+1    Програмування                  120
+```
+
+---
+
+### Функціонал груп
+
+Для груп доступно:
+
+- додавання групи;
+- перегляд груп;
+- редагування групи за `id`;
+- видалення групи за `id`;
+- пошук груп за назвою або спеціальністю;
+- перевірка, що назва групи не порожня;
+- перевірка, що курс знаходиться в межах `1-4`;
+- перевірка, що спеціальність не порожня;
+- заборона видалення групи, якщо вона використовується у навантаженні.
+
+Таблиця груп містить:
+
+```text
+ID   Name           Course     Speciality
+-------------------------------------------------------
+1    ПР-214         2          Інженерія програмного забезпечення
+```
+
+---
+
+### Функціонал навантаження
+
+Для навантаження доступно:
+
+- додавання навантаження;
+- перегляд усіх записів навантаження;
+- редагування навантаження за `id`;
+- видалення навантаження за `id`;
+- пошук навантаження за Id викладача, Id групи, Id дисципліни, Id навантаження або кількістю годин;
+- введення декількох викладачів через пробіл;
+- введення декількох груп через пробіл;
+- автоматичний підрахунок загальної кількості годин;
+- перевірка існування всіх пов'язаних викладачів;
+- перевірка існування всіх пов'язаних груп;
+- перевірка існування дисципліни;
+- перевірка, що списки викладачів і груп не порожні;
+- перевірка, що в списках немає дубльованих Id;
+- перевірка, що загальна кількість годин не дорівнює 0;
+- перевірка, що навантаження не перевищує квоту викладача;
+- перевірка, що навантаження не перевищує кількість годин дисципліни.
+
+Таблиця навантаження містить:
+
+```text
+ID   Teachers       Groups         Disc ID     Lect      Pract    Lab      Sem      Cons     Total
+-----------------------------------------------------------------------------------------------------------
+1    1,2            1              1           20        30       20       10       5        85
+```
+
+---
+
+## Архітектура проєкту
+
+Проєкт побудований по шарах:
+
+```text
+UI
+ ↓
+Services
+ ↓
+Repositories
+ ↓
+Storage
+ ↓
+JSON files
+```
+
+Така структура потрібна, щоб не змішувати всю логіку в одному файлі.
+
+---
+
+### 1. UI layer
+
+UI-шар відповідає за:
+
+- показ меню;
+- читання даних з консолі;
+- виведення таблиць;
+- виклик сервісів;
+- показ повідомлень користувачу.
+
+До UI-шару належать:
+
+```text
+src/main.cpp
+src/ui.cpp
+src/ui/input.cpp
+src/ui/menu_handlers.cpp
+src/ui/search.cpp
+src/app/teacher.cpp
+src/app/group.cpp
+src/app/discipline.cpp
+src/app/workload.cpp
+```
+
+Приклад: користувач вводить дані викладача, а `HandleTeacherCreate()` створює модель `Teacher` і передає її в service layer.
+
+---
+
+### 2. Service layer
+
+Service-шар відповідає за бізнес-логіку і перевірки.
+
+До service-шару належать:
+
+```text
+src/services/teacher_service.cpp
+src/services/group_service.cpp
+src/services/discipline_service.cpp
+src/services/workload_service.cpp
+```
+
+Саме тут перевіряється:
+
+- чи не порожні текстові поля;
+- чи правильний курс групи;
+- чи існують пов'язані записи;
+- чи можна видалити запис;
+- чи не перевищена квота викладача;
+- чи не перевищені години дисципліни.
+
+Service layer повертає `OperationResult`:
+
+```cpp
+struct OperationResult
+{
+    bool success = false;
+    std::string message;
+};
+```
+
+Якщо операція успішна — `success = true`.
+
+Якщо сталася помилка — `success = false`, а в `message` знаходиться текст помилки.
+
+---
+
+### 3. Repository layer
+
+Repository-шар відповідає за CRUD-операції над конкретними JSON-файлами.
+
+До repository-шару належать:
+
+```text
+src/app/repositories/teacher_repository.cpp
+src/app/repositories/group_repository.cpp
+src/app/repositories/discipline_repository.cpp
+src/app/repositories/workload_repository.cpp
+```
+
+Repository виконує такі задачі:
+
+- прочитати JSON-файл;
+- знайти запис за `id`;
+- створити новий `id`;
+- додати новий запис;
+- оновити запис;
+- видалити запис;
+- перетворити JSON-об'єкт у C++ модель;
+- перетворити C++ модель у JSON-об'єкт.
+
+Repository не повинен займатися введенням з консолі. Це задача UI.
+
+Repository не повинен вирішувати бізнес-правила. Це задача service layer.
+
+---
+
+### 4. Storage layer
+
+Storage-шар відповідає за низькорівневу роботу з JSON-файлами.
+
+Файли:
+
+```text
+include/storage/json_storage.h
+src/storage/json_storage.cpp
+```
+
+Storage layer має дві основні функції:
+
+```cpp
+nlohmann::json ReadJsonArray(const std::string& file_path);
+bool WriteJsonArray(const std::string& file_path, const nlohmann::json& data);
+```
+
+Він:
+
+- відкриває файл;
+- читає JSON;
+- перевіряє, що кореневий елемент є масивом;
+- повертає порожній масив, якщо файл не існує;
+- створює директорії перед записом;
+- записує JSON з красивим форматуванням `dump(2)`.
+
+---
+
+### 5. Utils
+
+Utils містить допоміжні функції.
+
+Приклад:
+
+```text
+include/utils/string_utils.h
+src/utils/string_utils.cpp
+```
+
+Типові задачі:
+
+- обрізати пробіли з рядка;
+- перевірити, чи рядок порожній;
+- перетворити список Id у рядок для таблиці.
+
+---
+
+## Структура директорій
+
+Приблизна структура проєкту:
+
+```text
+CourseProject/
+├── include/
+│   ├── common/
+│   │   └── operation_result.h
+│   │
+│   ├── headers/
+│   │   ├── teacher.h
+│   │   ├── discipline.h
+│   │   ├── group.h
+│   │   └── workload.h
+│   │
+│   ├── repositories/
+│   │   ├── teacher_repository.h
+│   │   ├── discipline_repository.h
+│   │   ├── group_repository.h
+│   │   └── workload_repository.h
+│   │
+│   ├── services/
+│   │   ├── teacher_service.h
+│   │   ├── discipline_service.h
+│   │   ├── group_service.h
+│   │   └── workload_service.h
+│   │
+│   ├── storage/
+│   │   └── json_storage.h
+│   │
+│   ├── ui/
+│   │   ├── input.h
+│   │   ├── menu_handlers.h
+│   │   ├── search.h
+│   │   └── table.h
+│   │
+│   ├── utils/
+│   │   └── string_utils.h
+│   │
+│   ├── nlohmann/
+│   │   └── json.hpp
+│   │
+│   ├── models.h
+│   └── ui.h
+│
+├── src/
+│   ├── app/
+│   │   ├── repositories/
+│   │   │   ├── teacher_repository.cpp
+│   │   │   ├── discipline_repository.cpp
+│   │   │   ├── group_repository.cpp
+│   │   │   └── workload_repository.cpp
+│   │   │
+│   │   ├── teacher.cpp
+│   │   ├── discipline.cpp
+│   │   ├── group.cpp
+│   │   └── workload.cpp
+│   │
+│   ├── services/
+│   │   ├── teacher_service.cpp
+│   │   ├── discipline_service.cpp
+│   │   ├── group_service.cpp
+│   │   └── workload_service.cpp
+│   │
+│   ├── storage/
+│   │   └── json_storage.cpp
+│   │
+│   ├── ui/
+│   │   ├── input.cpp
+│   │   ├── menu_handlers.cpp
+│   │   └── search.cpp
+│   │
+│   ├── utils/
+│   │   └── string_utils.cpp
+│   │
+│   ├── main.cpp
+│   └── ui.cpp
+│
+├── Output/
+│   ├── Teachers.json
+│   ├── Disciplines.json
+│   ├── Groups.json
+│   └── Workloads.json
+│
+├── CMakeLists.txt
+├── build.sh
+├── build.bat
+├── run.sh
+├── run.bat
+└── README.md
+```
+
+`Output/` створюється автоматично під час збереження даних.
+
+---
+
+## Формат збереження даних
+
+Дані зберігаються у папці:
+
+```text
+Output/
+```
+
+Програма використовує 4 JSON-файли:
+
+```text
+Output/Teachers.json
+Output/Disciplines.json
+Output/Groups.json
+Output/Workloads.json
+```
+
+Кожен файл містить JSON-масив.
+
+Наприклад:
+
+```json
+[
+  {
+    "id": 1,
+    "full_name": "Іваненко Іван Іванович",
+    "digital_commission": "Цифрові технології",
+    "quota": 180
+  }
+]
+```
+
+Якщо файл не існує, програма вважає, що даних поки немає, і працює з порожнім масивом.
+
+При записі даних програма автоматично створює потрібну папку і записує файл.
+
+---
+
+### Сумісність зі старими JSON-ключами
+
+Новий формат використовує `snake_case`:
+
+```json
+{
+  "id": 1,
+  "full_name": "Name"
+}
+```
+
+Але repository layer також читає старі ключі у стилі PascalCase, наприклад:
+
+```json
+{
+  "Id": 1,
+  "FullName": "Name"
+}
+```
+
+Це потрібно, щоб старі локальні JSON-файли не ламали програму після оновлення коду.
+
+---
+
+## Залежності
+
+Для запуску готового `.exe` на Windows залежності не потрібні.
+
+Для збірки з коду потрібні:
+
+- C++20 compiler;
+- `g++`, MinGW або інший сумісний компілятор;
+- опціонально CMake 3.20+;
+- `nlohmann/json.hpp`.
+
+`nlohmann/json` — це header-only бібліотека. Її не треба компілювати як `.dll`, `.lib` або `.a`.
+
+Щоб проєкт був самодостатнім, файл бібліотеки повинен лежати тут:
+
+```text
+include/nlohmann/json.hpp
+```
+
+Тоді в коді можна залишати:
+
+```cpp
+#include <nlohmann/json.hpp>
+```
+
+А компілювати з параметром:
 
 ```bash
-git pull
+-Iinclude
+```
+
+---
+
+## Запуск готової програми
+
+### Windows для викладача / перевіряючого
+
+Якщо в папці вже є готовий файл:
+
+```text
+app.exe
+```
+
+то нічого встановлювати не потрібно.
+
+Достатньо запустити:
+
+```text
+run.bat
+```
+
+або двічі натиснути на:
+
+```text
+app.exe
+```
+
+Рекомендована структура папки для здачі:
+
+```text
+CourseProject/
+├── app.exe
+├── run.bat
+├── Output/
+├── README.md
+└── src/ і include/ за потреби
+```
+
+Якщо `Output/` відсутня, програма створить її при першому збереженні.
+
+---
+
+### Linux
+
+Якщо вже є зібраний файл:
+
+```text
+app
+```
+
+запуск:
+
+```bash
+./app
+```
+
+Якщо немає прав на запуск:
+
+```bash
+chmod +x app
+./app
+```
+
+---
+
+## Збірка на Linux
+
+### Варіант 1: через `build.sh`
+
+Рекомендований простий спосіб:
+
+```bash
+chmod +x build.sh
+./build.sh
+./app
+```
+
+Правильний `build.sh` повинен компілювати всі `.cpp` файли всередині `src/`:
+
+```bash
+#!/bin/bash
+
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Iinclude \
+    $(find src -name "*.cpp") \
+    -o app
+```
+
+Цей спосіб зручний, тому що якщо в проєкт додано новий `.cpp`, він автоматично потрапить у збірку.
+
+---
+
+### Варіант 2: вручну через `g++`
+
+```bash
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Iinclude \
+    $(find src -name "*.cpp") \
+    -o app
+```
+
+Запуск:
+
+```bash
+./app
+```
+
+---
+
+### Варіант 3: через CMake
+
+```bash
 cmake -S . -B build
 cmake --build build
 ./build/course_project
 ```
+
+Якщо при CMake-збірці з'являються `undefined reference`, потрібно перевірити, що всі `.cpp` файли додані в `CMakeLists.txt`.
+
+---
+
+## Збірка на Windows
+
+### Важливо
+
+Якщо користувач просто запускає готовий `app.exe`, йому не потрібен компілятор.
+
+Але якщо користувач хоче сам зібрати проєкт з коду, тоді потрібен компілятор C++20, наприклад:
+
+- MinGW-w64;
+- MSYS2 MinGW;
+- Visual Studio Build Tools;
+- або інший C++20 compiler.
+
+---
+
+### Варіант 1: `build.bat` через MinGW g++
+
+Файл `build.bat`:
+
+```bat
+@echo off
+chcp 65001 > nul
+setlocal enabledelayedexpansion
+
+echo Building CourseProject...
+
+set SOURCES=
+
+for /r src %%f in (*.cpp) do (
+    set SOURCES=!SOURCES! "%%f"
+)
+
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Iinclude !SOURCES! ^
+    -static -static-libgcc -static-libstdc++ ^
+    -o app.exe
+
+if %errorlevel% neq 0 (
+    echo.
+    echo Build failed.
+    pause
+    exit /b %errorlevel%
+)
+
+echo.
+echo Build successful.
+echo File created: app.exe
+pause
+```
+
+Запуск збірки:
+
+```bat
+build.bat
+```
+
+Після успішної збірки з'явиться:
+
+```text
+app.exe
+```
+
+---
+
+### Варіант 2: запуск через `run.bat`
+
+Файл `run.bat`:
+
+```bat
+@echo off
+chcp 65001 > nul
+
+app.exe
+
+echo.
+pause
+```
+
+Запуск:
+
+```bat
+run.bat
+```
+
+---
+
+### Варіант 3: через CMake на Windows
+
+```bat
+cmake -S . -B build
+cmake --build build
+```
+
+Після збірки виконуваний файл буде в папці `build/` або в одній з підпапок CMake-генератора.
+
+---
+
+## Крос-компіляція Windows `.exe` з Linux
+
+Якщо розробка ведеться на Arch Linux, але потрібно отримати Windows `.exe`, можна використати MinGW cross-compiler.
+
+Встановлення на Arch Linux:
+
+```bash
+sudo pacman -S mingw-w64-gcc
+```
+
+Скрипт `build-windows.sh`:
+
+```bash
+#!/bin/bash
+
+x86_64-w64-mingw32-g++ -std=c++20 -Wall -Wextra -Wpedantic -Iinclude \
+    $(find src -name "*.cpp") \
+    -static -static-libgcc -static-libstdc++ \
+    -o app.exe
+```
+
+Запуск:
+
+```bash
+chmod +x build-windows.sh
+./build-windows.sh
+```
+
+Після цього в корені проєкту з'явиться:
+
+```text
+app.exe
+```
+
+Саме цей файл можна передати викладачу для запуску на Windows.
+
+---
+
+## Скрипти збірки
+
+Рекомендовано мати 4 службові скрипти:
+
+```text
+build.sh          Linux build
+run.sh            Linux run
+build.bat         Windows build
+run.bat           Windows run
+```
+
+### `run.sh`
+
+```bash
+#!/bin/bash
+
+./app
+```
+
+Команди:
+
+```bash
+chmod +x run.sh
+./run.sh
+```
+
+---
+
+### `build.sh`
+
+```bash
+#!/bin/bash
+
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Iinclude \
+    $(find src -name "*.cpp") \
+    -o app
+```
+
+---
+
+### `build.bat`
+
+```bat
+@echo off
+chcp 65001 > nul
+setlocal enabledelayedexpansion
+
+echo Building CourseProject...
+
+set SOURCES=
+
+for /r src %%f in (*.cpp) do (
+    set SOURCES=!SOURCES! "%%f"
+)
+
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Iinclude !SOURCES! ^
+    -static -static-libgcc -static-libstdc++ ^
+    -o app.exe
+
+if %errorlevel% neq 0 (
+    echo.
+    echo Build failed.
+    pause
+    exit /b %errorlevel%
+)
+
+echo.
+echo Build successful.
+echo File created: app.exe
+pause
+```
+
+---
+
+### `run.bat`
+
+```bat
+@echo off
+chcp 65001 > nul
+
+app.exe
+
+echo.
+pause
+```
+
+---
+
+## Типовий сценарій роботи
+
+Правильний порядок роботи з програмою:
+
+1. Запустити програму.
+2. Додати викладачів.
+3. Додати дисципліни.
+4. Додати групи.
+5. Додати навчальне навантаження.
+6. Переглянути таблиці.
+7. За потреби скористатися пошуком.
+8. За потреби відредагувати або видалити записи.
+
+Чому саме так:
+
+- навантаження посилається на викладачів;
+- навантаження посилається на групи;
+- навантаження посилається на дисципліну;
+- тому ці записи повинні існувати до створення навантаження.
+
+---
+
+## Валідація і бізнес-правила
+
+### Викладач
+
+Перевіряється:
+
+- ПІБ не може бути порожнім;
+- цифрова комісія не може бути порожньою;
+- квота годин повинна бути більше 0;
+- не можна видалити викладача, якщо він використовується у навантаженні.
+
+---
+
+### Дисципліна
+
+Перевіряється:
+
+- назва дисципліни не може бути порожньою;
+- кількість годин повинна бути більше 0;
+- не можна видалити дисципліну, якщо вона використовується у навантаженні.
+
+---
+
+### Група
+
+Перевіряється:
+
+- назва групи не може бути порожньою;
+- курс повинен бути від 1 до 4;
+- спеціальність не може бути порожньою;
+- не можна видалити групу, якщо вона використовується у навантаженні.
+
+---
+
+### Навантаження
+
+Перевіряється:
+
+- список викладачів не може бути порожнім;
+- список груп не може бути порожнім;
+- у списку викладачів не повинно бути повторів;
+- у списку груп не повинно бути повторів;
+- кожен викладач повинен існувати;
+- кожна група повинна існувати;
+- дисципліна повинна існувати;
+- загальна кількість годин не може бути 0;
+- загальна кількість годин не повинна бути занадто великою;
+- сумарне навантаження викладача не може перевищувати його квоту;
+- сумарне навантаження дисципліни не може перевищувати її кількість годин.
+
+---
+
+## Пошук
+
+Пошук доступний через пункт меню:
+
+```text
+5. Пошук
+```
+
+Користувач вводить текст, після чого програма шукає збіги у всіх основних розділах.
+
+Пошук виконується по:
+
+### Викладачі
+
+- ПІБ;
+- цифровій комісії.
+
+### Групи
+
+- назві групи;
+- спеціальності.
+
+### Дисципліни
+
+- назві дисципліни.
+
+### Навантаження
+
+- Id навантаження;
+- Id викладачів;
+- Id груп;
+- Id дисципліни;
+- загальній кількості годин.
+
+Пошук по тексту не залежить від регістру символів.
+
+---
+
+## Типові помилки і рішення
+
+### `undefined reference`
+
+Приклад:
+
+```text
+undefined reference to `services::CreateTeacher(...)'
+undefined reference to `storage::ReadJsonArray(...)'
+```
+
+Причина: потрібний `.cpp` файл не потрапив у команду компіляції.
+
+Рішення: збирати всі `.cpp` файли:
+
+```bash
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Iinclude \
+    $(find src -name "*.cpp") \
+    -o app
+```
+
+Або додати відсутній файл у `CMakeLists.txt`.
+
+---
+
+### `nlohmann/json.hpp: No such file or directory`
+
+Причина: компілятор не бачить `json.hpp`.
+
+Рішення: перевірити, що файл існує тут:
+
+```text
+include/nlohmann/json.hpp
+```
+
+і що збірка виконується з параметром:
+
+```bash
+-Iinclude
+```
+
+---
+
+### `Permission denied` при запуску `.sh`
+
+Причина: файл не має права на виконання.
+
+Рішення:
+
+```bash
+chmod +x build.sh
+chmod +x run.sh
+```
+
+---
+
+### `.bat` не запускається на Linux
+
+`.bat` — це Windows script.
+
+На Linux потрібно запускати:
+
+```bash
+./build.sh
+./run.sh
+```
+
+або напряму:
+
+```bash
+./app
+```
+
+---
+
+### `app.exe` не запускається на Linux
+
+`app.exe` — це Windows executable.
+
+На Linux потрібно збирати Linux-бінарник:
+
+```bash
+./build.sh
+./app
+```
+
+Або запускати Windows `.exe` через Wine, якщо це потрібно.
+
+---
+
+### Українські символи неправильно відображаються у Windows
+
+У `main.cpp` для Windows використовується:
+
+```cpp
+system("chcp 65001 > nul");
+```
+
+Також у `run.bat` використовується:
+
+```bat
+chcp 65001 > nul
+```
+
+Це вмикає UTF-8 кодову сторінку для консолі Windows.
+
+---
+
+## Що можна покращити в майбутньому
+
+Можливі напрямки розвитку:
+
+- додати CMake-автопошук усіх `.cpp` файлів;
+- додати експорт звітів у `.csv`;
+- додати сортування таблиць;
+- додати фільтрацію навантаження по викладачу, групі або дисципліні;
+- додати збереження резервних копій JSON;
+- додати unit-тести для service layer;
+- додати окрему систему звітів;
+- додати перевірку конфліктів між групами, викладачами і дисциплінами;
+- додати графічний інтерфейс;
+- замінити JSON-файли на SQLite, якщо даних стане багато.
+
+---
+
+## Підсумок
+
+CourseProject — це навчальний C++20 консольний застосунок для керування розподілом учбового навантаження.
+
+Він демонструє:
+
+- роботу з моделями;
+- роботу з JSON;
+- CRUD-операції;
+- пошук;
+- табличний вивід;
+- валідацію введення;
+- бізнес-правила;
+- розділення програми на архітектурні шари;
+- підготовку проєкту до запуску на Linux і Windows.
+
+Головна перевага проєкту — він простий для запуску, не потребує бази даних і може працювати повністю локально.
