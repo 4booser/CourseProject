@@ -3,6 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include <optional>
+#include <algorithm>
 #include "models.h"
 #include <vector>
 
@@ -58,20 +59,17 @@ static bool WriteGroupsJson(const json& groups)
 unsigned short GetLastGroupId()
 {
     json groups = ReadGroupsJson();
+    unsigned short max_id = 0;
 
-    if (groups.empty())
+    for (const auto& group_json : groups)
     {
-        return 0;
+        if (group_json.contains("Id"))
+        {
+            max_id = std::max(max_id, group_json["Id"].get<unsigned short>());
+        }
     }
 
-    const auto& last_group = groups.back();
-
-    if (!last_group.contains("Id"))
-    {
-        return 0;
-    }
-
-    return last_group["Id"].get<unsigned short>();
+    return max_id;
 }
 
 bool SaveGroup(models::Group& group)
