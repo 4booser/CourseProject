@@ -1,10 +1,35 @@
 #pragma once
 
+#include <algorithm>
+#include <cctype>
 #include <string>
 #include <vector>
 
 namespace utils
 {
+    inline std::string Trim(const std::string& value)
+    {
+        auto first = std::find_if_not(value.begin(), value.end(), [](unsigned char character) {
+            return std::isspace(character);
+        });
+
+        auto last = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char character) {
+            return std::isspace(character);
+        }).base();
+
+        if (first >= last)
+        {
+            return "";
+        }
+
+        return std::string(first, last);
+    }
+
+    inline bool IsBlank(const std::string& value)
+    {
+        return Trim(value).empty();
+    }
+
     inline std::string JoinIds(const std::vector<unsigned short>& ids)
     {
         std::string result;
