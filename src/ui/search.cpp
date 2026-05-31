@@ -3,6 +3,7 @@
 #include "repositories/teacher_repository.h"
 #include "repositories/group_repository.h"
 #include "repositories/discipline_repository.h"
+#include "repositories/workload_repository.h"
 #include "ui/input.h"
 #include "models.h"
 
@@ -27,6 +28,24 @@ namespace
     bool ContainsIgnoreCase(const std::string& text, const std::string& query)
     {
         return ToLower(text).find(ToLower(query)) != std::string::npos;
+    }
+
+    bool NumberMatches(unsigned int number, const std::string& query)
+    {
+        return std::to_string(number).find(query) != std::string::npos;
+    }
+
+    bool NumberListMatches(const std::vector<unsigned short>& numbers, const std::string& query)
+    {
+        for (unsigned short number : numbers)
+        {
+            if (NumberMatches(number, query))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void SearchTeachers(const std::string& query)
@@ -102,6 +121,60 @@ namespace
             std::cout << "Дисциплiн не знайдено.\n";
         }
     }
+
+    void SearchWorkloads(const std::string& query)
+    {
+        bool found = false;
+        std::vector<models::Workload> workloads = GetWorkloads();
+
+        for (const models::Workload& workload : workloads)
+        {
+            bool matches =
+                NumberMatches(workload.id, query) ||
+                NumberListMatches(workload.teacher_ids, query) ||
+                NumberListMatches(workload.group_ids, query) ||
+                NumberMatches(workload.discipline_id, query) ||
+                NumberMatches(workload.total_hours, query);
+
+            if (!matches)
+            {
+                continue;
+            }
+
+            std::cout << "[Workload] Id: " << workload.id
+                << ", DisciplineId: " << workload.discipline_id
+                << ", TotalHours: " << workload.total_hours
+                << ", Teachers: ";
+
+            for (std::size_t i = 0; i < workload.teacher_ids.size(); ++i)
+            {
+                std::cout << workload.teacher_ids[i];
+                if (i + 1 < workload.teacher_ids.size())
+                {
+                    std::cout << ',';
+                }
+            }
+
+            std::cout << ", Groups: ";
+
+            for (std::size_t i = 0; i < workload.group_ids.size(); ++i)
+            {
+                std::cout << workload.group_ids[i];
+                if (i + 1 < workload.group_ids.size())
+                {
+                    std::cout << ',';
+                }
+            }
+
+            std::cout << '\n';
+            found = true;
+        }
+
+        if (!found)
+        {
+            std::cout << "Навантажень не знайдено.\n";
+        }
+    }
 }
 
 namespace ui
@@ -121,5 +194,6 @@ namespace ui
         SearchTeachers(query);
         SearchGroups(query);
         SearchDisciplines(query);
+        SearchWorkloads(query);
     }
 }
