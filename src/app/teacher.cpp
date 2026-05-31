@@ -1,7 +1,10 @@
 #include "repositories/teacher_repository.h"
 #include "headers/teacher.h"
 #include "models.h"
+#include <string>
 #include <iostream>
+#include <optional>
+#include <iomanip>
 
 
 void HandleTeacherCreate(){
@@ -28,4 +31,29 @@ void HandleTeacherCreate(){
     }
 
     std::cout << "\nВикладача збережено.\n";
+}
+
+void HandleTeachersPrint(){
+    std::cout << std::endl;
+    std::cout << std::left
+        << std::setw(5)  << "ID"
+        << std::setw(20) << "Full name"
+        << std::setw(20) << "Commission"
+        << std::setw(10) << "Quota"
+        << std::endl;
+    std::cout << std::string(60, '-') << std::endl;
+
+    for (unsigned short i = 1; i <= GetLastTeacherId(); i++)
+    {
+        std::optional<models::Teacher> teacher = GetTeacherById(i);
+
+        if (!teacher.has_value()) { continue; }
+
+        std::cout << std::left
+            << std::setw(5) << teacher->id
+            << std::setw(25) << teacher->full_name
+            << std::setw(20) << teacher->digital_commission
+            << std::setw(10) << teacher->quota
+            << std::endl;
+    }
 }

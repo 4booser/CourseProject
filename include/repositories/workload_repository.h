@@ -3,7 +3,7 @@
 #include "models.h"
 #include <vector>
 
-unsigned short GetNextWorkloadId();
+unsigned short GetLastWorkloadId();
 
 bool SaveWorkload(models::Workload& workload);
 std::vector<models::Workload> GetWorkloads();

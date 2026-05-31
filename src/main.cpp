@@ -1,8 +1,12 @@
 #include "headers/teacher.h"
+#include "headers/workload.h"
+#include "headers/discipline.h"
+#include "headers/subject.h"
+#include "headers/group.h"
+#include "ui.h"
 #include <exception>
 #include <iostream>
 #include <cstdlib>
-#include "ui.h"
 
 int main()
 {
@@ -12,15 +16,13 @@ system("chcp 65001 > nul");
 
     //system("chcp 65001>nul");
 
-    unsigned short object;
-    unsigned short option;
+    unsigned short object, option, id;
 
     do{
         ui::ShowObjects();
 
         try{
             std::cin >> object;
-
         }
         catch(const std::exception& exception){
             
@@ -35,6 +37,22 @@ system("chcp 65001 > nul");
                 switch(option){
                     case 1:
                     HandleTeacherCreate();
+                        break;
+                    case 2:
+                    HandleTeachersPrint();
+                        break;
+                    case 3:
+                    HandleTeachersPrint();
+                    std::cout << "Введiть Id викладача для редагування: ";
+                    std::cin >> id;
+                    HandleTeacherEdit(id);
+                        break;
+                    case 4:
+                    std::cout << "Введiть Id викладача для видалення: ";
+                    HandleTeachersPrint();
+                    std::cin >> id;
+                    HandleTeacherDelete(id);
+                        break;
                 }
                 break;
             case 2:
@@ -44,10 +62,19 @@ system("chcp 65001 > nul");
 
                 break;
             case 4:
+                ui::ShowOptions();
+                std::cin >> option;
 
+                switch(option){
+                    case 1:
+                    HandleWorkloadCreate();
+                }
                 break;
             case 5:
 
+                break;
+            case 0:
+                std::cout << "Вихiд з програми." << std::endl;;
                 break;
             default:
                 std::cout << "Невірний пункт меню." << std::endl;

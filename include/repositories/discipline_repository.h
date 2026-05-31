@@ -3,7 +3,7 @@
 #include "models.h"
 #include <vector>
 
-unsigned short GetNextDisciplineId();
+unsigned short GetLastDisciplineId();
 
 bool SaveDiscipline(models::Discipline& discipline);
 std::vector<models::Discipline> GetDisciplines();

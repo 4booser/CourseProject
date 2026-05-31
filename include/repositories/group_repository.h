@@ -3,7 +3,7 @@
 #include "models.h"
 #include <vector>
 
-unsigned short GetNextGroupId();
+unsigned short GetLastGroupId();
 
 bool SaveGrouop(models::Group& group);
 std::vector<models::Group> GetGroups();
