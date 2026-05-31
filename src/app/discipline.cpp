@@ -1,6 +1,7 @@
 #include "repositories/discipline_repository.h"
 #include "repositories/workload_repository.h"
 #include "headers/discipline.h"
+#include "ui/input.h"
 #include "models.h"
 
 #include <iostream>
@@ -9,22 +10,6 @@
 #include <string>
 #include <vector>
 #include <optional>
-
-static unsigned int ReadUnsignedInt(const std::string& prompt)
-{
-    unsigned int value = 0;
-
-    std::cout << prompt;
-
-    while (!(std::cin >> value))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Помилка. Введiть число: ";
-    }
-
-    return value;
-}
 
 void HandleDisciplineCreate()
 {
@@ -35,7 +20,7 @@ void HandleDisciplineCreate()
     std::cout << "Введiть назву дисциплiни: ";
     std::getline(std::cin, discipline.name);
 
-    discipline.quota = ReadUnsignedInt("Введiть кiлькiсть годин дисциплiни: ");
+    discipline.quota = ui::ReadUnsignedInt("Введiть кiлькiсть годин дисциплiни: ");
 
     if (!SaveDiscipline(discipline))
     {
@@ -85,7 +70,7 @@ void HandleDisciplineEdit(const unsigned short& id)
     std::cout << "Введiть нову назву дисциплiни: ";
     std::getline(std::cin, discipline.name);
 
-    discipline.quota = ReadUnsignedInt("Введiть нову кiлькiсть годин дисциплiни: ");
+    discipline.quota = ui::ReadUnsignedInt("Введiть нову кiлькiсть годин дисциплiни: ");
 
     if (!EditDisciplineById(id, discipline))
     {
