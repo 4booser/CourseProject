@@ -10,6 +10,49 @@ using json = nlohmann::json;
 
 const std::string group_file_path = "Output/Groups.json";
 
+static bool HasId(const json& object)
+{
+    return object.contains("id") || object.contains("Id");
+}
+
+static unsigned short ReadId(const json& object)
+{
+    if (object.contains("id"))
+    {
+        return object["id"].get<unsigned short>();
+    }
+
+    return object["Id"].get<unsigned short>();
+}
+
+static models::Group ParseGroup(const json& group_json)
+{
+    models::Group group{};
+
+    group.id = ReadId(group_json);
+    group.name = group_json.contains("name")
+        ? group_json["name"].get<std::string>()
+        : group_json["Name"].get<std::string>();
+    group.course = group_json.contains("course")
+        ? group_json["course"].get<unsigned short>()
+        : group_json["Course"].get<unsigned short>();
+    group.speciality = group_json.contains("speciality")
+        ? group_json["speciality"].get<std::string>()
+        : group_json["Speciality"].get<std::string>();
+
+    return group;
+}
+
+static json BuildGroupJson(const models::Group& group)
+{
+    return {
+        {"id", group.id},
+        {"name", group.name},
+        {"course", group.course},
+        {"speciality", group.speciality}
+    };
+}
+
 unsigned short GetLastGroupId()
 {
     json groups = storage::ReadJsonArray(group_file_path);
@@ -17,9 +60,9 @@ unsigned short GetLastGroupId()
 
     for (const auto& group_json : groups)
     {
-        if (group_json.contains("Id"))
+        if (HasId(group_json))
         {
-            max_id = std::max(max_id, group_json["Id"].get<unsigned short>());
+            max_id = std::max(max_id, ReadId(group_json));
         }
     }
 
@@ -31,15 +74,7 @@ bool SaveGroup(models::Group& group)
     json groups = storage::ReadJsonArray(group_file_path);
 
     group.id = GetLastGroupId() + 1;
-
-    json group_json = {
-        {"Id", group.id},
-        {"Name", group.name},
-        {"Course", group.course},
-        {"Speciality", group.speciality}
-    };
-
-    groups.push_back(group_json);
+    groups.push_back(BuildGroupJson(group));
 
     return storage::WriteJsonArray(group_file_path, groups);
 }
@@ -51,18 +86,12 @@ std::vector<models::Group> GetGroups()
 
     for (const auto& group_json : groups)
     {
-        if (!group_json.contains("Id"))
+        if (!HasId(group_json))
         {
             continue;
         }
 
-        models::Group group;
-        group.id = group_json["Id"].get<unsigned short>();
-        group.name = group_json["Name"].get<std::string>();
-        group.course = group_json["Course"].get<unsigned short>();
-        group.speciality = group_json["Speciality"].get<std::string>();
-
-        result.push_back(group);
+        result.push_back(ParseGroup(group_json));
     }
 
     return result;
@@ -74,20 +103,14 @@ std::optional<models::Group> GetGroupById(unsigned short id)
 
     for (const auto& group_json : groups)
     {
-        if (!group_json.contains("Id"))
+        if (!HasId(group_json))
         {
             continue;
         }
 
-        if (group_json["Id"].get<unsigned short>() == id)
+        if (ReadId(group_json) == id)
         {
-            models::Group group;
-            group.id = group_json["Id"].get<unsigned short>();
-            group.name = group_json["Name"].get<std::string>();
-            group.course = group_json["Course"].get<unsigned short>();
-            group.speciality = group_json["Speciality"].get<std::string>();
-
-            return group;
+            return ParseGroup(group_json);
         }
     }
 
@@ -101,11 +124,11 @@ bool EditGroupById(const unsigned short& id, const models::Group& updated_group)
 
     for (auto& group_json : groups)
     {
-        if (group_json.contains("Id") && group_json["Id"].get<unsigned short>() == id)
+        if (HasId(group_json) && ReadId(group_json) == id)
         {
-            group_json["Name"] = updated_group.name;
-            group_json["Course"] = updated_group.course;
-            group_json["Speciality"] = updated_group.speciality;
+            models::Group group_to_save = updated_group;
+            group_to_save.id = id;
+            group_json = BuildGroupJson(group_to_save);
             was_updated = true;
             break;
         }
@@ -126,7 +149,7 @@ bool DeleteGroupById(const unsigned short& id)
 
     for (auto it = groups.begin(); it != groups.end(); ++it)
     {
-        if (it->contains("Id") && (*it)["Id"].get<unsigned short>() == id)
+        if (HasId(*it) && ReadId(*it) == id)
         {
             groups.erase(it);
             was_deleted = true;
