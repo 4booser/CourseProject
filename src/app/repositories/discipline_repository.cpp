@@ -10,6 +10,45 @@ using json = nlohmann::json;
 
 const std::string discipline_file_path = "Output/Disciplines.json";
 
+static bool HasId(const json& object)
+{
+    return object.contains("id") || object.contains("Id");
+}
+
+static unsigned short ReadId(const json& object)
+{
+    if (object.contains("id"))
+    {
+        return object["id"].get<unsigned short>();
+    }
+
+    return object["Id"].get<unsigned short>();
+}
+
+static models::Discipline ParseDiscipline(const json& discipline_json)
+{
+    models::Discipline discipline{};
+
+    discipline.id = ReadId(discipline_json);
+    discipline.name = discipline_json.contains("name")
+        ? discipline_json["name"].get<std::string>()
+        : discipline_json["Name"].get<std::string>();
+    discipline.quota = discipline_json.contains("quota")
+        ? discipline_json["quota"].get<unsigned int>()
+        : discipline_json["Quota"].get<unsigned int>();
+
+    return discipline;
+}
+
+static json BuildDisciplineJson(const models::Discipline& discipline)
+{
+    return {
+        {"id", discipline.id},
+        {"name", discipline.name},
+        {"quota", discipline.quota}
+    };
+}
+
 unsigned short GetLastDisciplineId()
 {
     json disciplines = storage::ReadJsonArray(discipline_file_path);
@@ -17,9 +56,9 @@ unsigned short GetLastDisciplineId()
 
     for (const auto& discipline_json : disciplines)
     {
-        if (discipline_json.contains("Id"))
+        if (HasId(discipline_json))
         {
-            max_id = std::max(max_id, discipline_json["Id"].get<unsigned short>());
+            max_id = std::max(max_id, ReadId(discipline_json));
         }
     }
 
@@ -31,14 +70,7 @@ bool SaveDiscipline(models::Discipline& discipline)
     json disciplines = storage::ReadJsonArray(discipline_file_path);
 
     discipline.id = GetLastDisciplineId() + 1;
-
-    json discipline_json = {
-        {"Id", discipline.id},
-        {"Name", discipline.name},
-        {"Quota", discipline.quota}
-    };
-
-    disciplines.push_back(discipline_json);
+    disciplines.push_back(BuildDisciplineJson(discipline));
 
     return storage::WriteJsonArray(discipline_file_path, disciplines);
 }
@@ -50,17 +82,12 @@ std::vector<models::Discipline> GetDisciplines()
 
     for (const auto& discipline_json : disciplines)
     {
-        if (!discipline_json.contains("Id"))
+        if (!HasId(discipline_json))
         {
             continue;
         }
 
-        models::Discipline discipline;
-        discipline.id = discipline_json["Id"].get<unsigned short>();
-        discipline.name = discipline_json["Name"].get<std::string>();
-        discipline.quota = discipline_json["Quota"].get<unsigned int>();
-
-        result.push_back(discipline);
+        result.push_back(ParseDiscipline(discipline_json));
     }
 
     return result;
@@ -72,19 +99,14 @@ std::optional<models::Discipline> GetDisciplineById(unsigned short id)
 
     for (const auto& discipline_json : disciplines)
     {
-        if (!discipline_json.contains("Id"))
+        if (!HasId(discipline_json))
         {
             continue;
         }
 
-        if (discipline_json["Id"].get<unsigned short>() == id)
+        if (ReadId(discipline_json) == id)
         {
-            models::Discipline discipline;
-            discipline.id = discipline_json["Id"].get<unsigned short>();
-            discipline.name = discipline_json["Name"].get<std::string>();
-            discipline.quota = discipline_json["Quota"].get<unsigned int>();
-
-            return discipline;
+            return ParseDiscipline(discipline_json);
         }
     }
 
@@ -98,10 +120,11 @@ bool EditDisciplineById(const unsigned short& id, const models::Discipline& upda
 
     for (auto& discipline_json : disciplines)
     {
-        if (discipline_json.contains("Id") && discipline_json["Id"].get<unsigned short>() == id)
+        if (HasId(discipline_json) && ReadId(discipline_json) == id)
         {
-            discipline_json["Name"] = updated_discipline.name;
-            discipline_json["Quota"] = updated_discipline.quota;
+            models::Discipline discipline_to_save = updated_discipline;
+            discipline_to_save.id = id;
+            discipline_json = BuildDisciplineJson(discipline_to_save);
             was_updated = true;
             break;
         }
@@ -122,7 +145,7 @@ bool RemoveDisciplineById(const unsigned short& id)
 
     for (auto it = disciplines.begin(); it != disciplines.end(); ++it)
     {
-        if (it->contains("Id") && (*it)["Id"].get<unsigned short>() == id)
+        if (HasId(*it) && ReadId(*it) == id)
         {
             disciplines.erase(it);
             was_removed = true;
