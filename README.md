@@ -1,6 +1,8 @@
 # CourseProject
 
-Console C++ application for managing educational workload distribution.
+Console C++20 application for managing educational workload distribution.
+
+The project stores data in JSON files and provides CRUD operations for teachers, groups, disciplines and workloads.
 
 ## Features
 
@@ -8,10 +10,91 @@ Console C++ application for managing educational workload distribution.
 - Groups CRUD
 - Disciplines CRUD
 - Workloads CRUD
+- Search across teachers, groups, disciplines and workloads
+- Table-based console output
+- Safe numeric input helpers
 - Workload relation validation
+- Teacher quota validation
+- Discipline hours validation
 - JSON file storage in `Output/`
 - CMake build configuration
-- GitHub Actions CMake build check
+
+## Architecture
+
+The project is organized by layers:
+
+```text
+UI
+ ↓
+Service
+ ↓
+Repository
+ ↓
+Storage
+```
+
+### UI
+
+Responsible for console input/output:
+
+```text
+src/ui.cpp
+src/ui/input.cpp
+src/ui/menu_handlers.cpp
+src/ui/search.cpp
+src/app/*.cpp
+```
+
+### Service
+
+Responsible for business rules and validation:
+
+```text
+src/services/teacher_service.cpp
+src/services/group_service.cpp
+src/services/discipline_service.cpp
+src/services/workload_service.cpp
+```
+
+Examples of service rules:
+
+- teacher full name cannot be empty;
+- teacher quota must be greater than 0;
+- group course must be in range 1-4;
+- discipline hours must be greater than 0;
+- workload cannot reference missing teachers, groups or disciplines;
+- workload cannot exceed teacher quota;
+- workload cannot exceed discipline hours;
+- related entities cannot be deleted while they are used by workloads.
+
+### Repository
+
+Responsible for CRUD operations:
+
+```text
+src/app/repositories/teacher_repository.cpp
+src/app/repositories/group_repository.cpp
+src/app/repositories/discipline_repository.cpp
+src/app/repositories/workload_repository.cpp
+```
+
+Repository mutation methods return `OperationResult`:
+
+```cpp
+struct OperationResult
+{
+    bool success = false;
+    std::string message;
+};
+```
+
+### Storage
+
+Responsible for reading and writing JSON arrays:
+
+```text
+src/storage/json_storage.cpp
+```
 
 ## Requirements
 
@@ -48,20 +131,75 @@ cmake --build build
 
 The application creates JSON files in the `Output/` directory:
 
-- `Teachers.json`
-- `Groups.json`
-- `Disciplines.json`
-- `Workloads.json`
+```text
+Output/Teachers.json
+Output/Groups.json
+Output/Disciplines.json
+Output/Workloads.json
+```
 
 `Output/` is ignored by Git because it contains local runtime data.
 
-## Workload rules
+## JSON format
 
-A workload can be created or edited only if all related entities exist:
+New records are written in `snake_case`.
 
-- every teacher ID must exist in `Teachers.json`;
-- every group ID must exist in `Groups.json`;
-- the discipline ID must exist in `Disciplines.json`.
+### Teacher
 
-The workload stores discipline relation as `DisciplineId` in JSON.
-Old local files with `SubjectId` are still readable for backward compatibility.
+```json
+{
+  "id": 1,
+  "full_name": "Іваненко Іван Іванович",
+  "digital_commission": "Software",
+  "quota": 120
+}
+```
+
+### Group
+
+```json
+{
+  "id": 1,
+  "name": "ПР-214",
+  "course": 2,
+  "speciality": "Software Engineering"
+}
+```
+
+### Discipline
+
+```json
+{
+  "id": 1,
+  "name": "Programming",
+  "quota": 120
+}
+```
+
+### Workload
+
+```json
+{
+  "id": 1,
+  "teacher_ids": [1],
+  "group_ids": [1],
+  "discipline_id": 1,
+  "lectures": 20,
+  "practical_classes": 30,
+  "laboratory_classes": 20,
+  "seminars": 10,
+  "consultations": 5,
+  "total_hours": 85
+}
+```
+
+Old local JSON files with PascalCase keys are still readable for backward compatibility.
+
+## Recommended local check
+
+```bash
+git pull
+cmake -S . -B build
+cmake --build build
+./build/course_project
+```
