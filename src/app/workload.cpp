@@ -1,4 +1,7 @@
 #include "repositories/workload_repository.h"
+#include "repositories/teacher_repository.h"
+#include "repositories/group_repository.h"
+#include "repositories/discipline_repository.h"
 #include "headers/workload.h"
 #include "models.h"
 
@@ -26,6 +29,65 @@ static std::vector<unsigned short> ReadIdsFromLine()
     }
 
     return ids;
+}
+
+static bool AreTeacherIdsValid(const std::vector<unsigned short>& teacher_ids)
+{
+    if (teacher_ids.empty())
+    {
+        std::cout << "At least one teacher ID is required.\n";
+        return false;
+    }
+
+    for (unsigned short teacher_id : teacher_ids)
+    {
+        if (!GetTeacherById(teacher_id).has_value())
+        {
+            std::cout << "Teacher with ID " << teacher_id << " does not exist.\n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool AreGroupIdsValid(const std::vector<unsigned short>& group_ids)
+{
+    if (group_ids.empty())
+    {
+        std::cout << "At least one group ID is required.\n";
+        return false;
+    }
+
+    for (unsigned short group_id : group_ids)
+    {
+        if (!GetGroupById(group_id).has_value())
+        {
+            std::cout << "Group with ID " << group_id << " does not exist.\n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool IsDisciplineIdValid(unsigned short discipline_id)
+{
+    if (!GetDisciplineById(discipline_id).has_value())
+    {
+        std::cout << "Discipline with ID " << discipline_id << " does not exist.\n";
+        return false;
+    }
+
+    return true;
+}
+
+static bool IsWorkloadValid(const models::Workload& workload)
+{
+    return
+        AreTeacherIdsValid(workload.teacher_ids) &&
+        AreGroupIdsValid(workload.group_ids) &&
+        IsDisciplineIdValid(workload.subject_id);
 }
 
 static void ReadWorkloadFields(models::Workload& workload)
@@ -69,6 +131,12 @@ void HandleWorkloadCreate()
     models::Workload workload{};
 
     ReadWorkloadFields(workload);
+
+    if (!IsWorkloadValid(workload))
+    {
+        std::cout << "Workload was not saved.\n";
+        return;
+    }
 
     if (!SaveWorkload(workload))
     {
@@ -149,6 +217,12 @@ void HandleWorkloadEdit(const unsigned short& id)
 
     models::Workload updated_workload{};
     ReadWorkloadFields(updated_workload);
+
+    if (!IsWorkloadValid(updated_workload))
+    {
+        std::cout << "Workload was not updated.\n";
+        return;
+    }
 
     if (!EditWorkloadById(id, updated_workload))
     {
