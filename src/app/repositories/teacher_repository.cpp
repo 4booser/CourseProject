@@ -3,6 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include <optional>
+#include <algorithm>
 #include "models.h"
 #include <vector>
 
@@ -36,14 +37,17 @@ unsigned short GetLastTeacherId()
         return 0;
     }
 
-    const auto& last_teacher = teachers.back();
+    unsigned short max_id = 0;
 
-    if (!last_teacher.contains("Id"))
+    for (const auto& teacher_json : teachers)
     {
-        return 0;
+        if (teacher_json.contains("Id"))
+        {
+            max_id = std::max(max_id, teacher_json["Id"].get<unsigned short>());
+        }
     }
 
-    return last_teacher["Id"].get<unsigned short>();
+    return max_id;
 }
 
 bool SaveTeacher(models::Teacher& teacher)
