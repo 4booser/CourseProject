@@ -25,7 +25,34 @@ namespace services
         return OperationResult::Ok();
     }
 
-    OperationResult CanDeleteGroup(unsigned short group_id)
+    OperationResult CreateGroup(models::Group& group)
+    {
+        OperationResult validation_result = ValidateGroup(group);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return SaveGroup(group);
+    }
+
+    OperationResult UpdateGroup(unsigned short group_id, const models::Group& group)
+    {
+        if (!GetGroupById(group_id).has_value())
+        {
+            return OperationResult::Fail("Групу з таким Id не знайдено.");
+        }
+
+        OperationResult validation_result = ValidateGroup(group);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return EditGroupById(group_id, group);
+    }
+
+    OperationResult DeleteGroup(unsigned short group_id)
     {
         if (!GetGroupById(group_id).has_value())
         {
@@ -34,9 +61,9 @@ namespace services
 
         if (HasWorkloadForGroup(group_id))
         {
-            return OperationResult::Fail("Неможливо видалити групу: вона використовується в навантаженнi.");
+            return OperationResult::Fail("Група використовується в навантаженнi.");
         }
 
-        return OperationResult::Ok();
+        return DeleteGroupById(group_id);
     }
 }
