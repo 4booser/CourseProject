@@ -59,7 +59,29 @@ system("chcp 65001 > nul");
 
                 break;
             case 3:
+                ui::ShowOptions();
+                std::cin >> option;
 
+                switch(option){
+                    case 1:
+                    HandleGroupCreate();
+                        break;
+                    case 2:
+                    HandleGroupsGet();
+                        break;
+                    case 3:
+                    HandleGroupsGet();
+                    std::cout << "Введiть Id групи для редагування: ";
+                    std::cin >> id;
+                    HandleGroupEdit(id);
+                        break;
+                    case 4:
+                    HandleGroupsGet();
+                    std::cout << "Введiть Id групи для видалення: ";
+                    std::cin >> id;
+                    HandleGroupDelete(id);
+                        break;
+                }
                 break;
             case 4:
                 ui::ShowOptions();
@@ -68,6 +90,7 @@ system("chcp 65001 > nul");
                 switch(option){
                     case 1:
                     HandleWorkloadCreate();
+                        break;
                 }
                 break;
             case 5:
