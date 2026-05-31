@@ -8,8 +8,10 @@ Console C++ application for managing educational workload distribution.
 - Groups CRUD
 - Disciplines CRUD
 - Workloads CRUD
+- Workload relation validation
 - JSON file storage in `Output/`
 - CMake build configuration
+- GitHub Actions CMake build check
 
 ## Requirements
 
@@ -52,3 +54,14 @@ The application creates JSON files in the `Output/` directory:
 - `Workloads.json`
 
 `Output/` is ignored by Git because it contains local runtime data.
+
+## Workload rules
+
+A workload can be created or edited only if all related entities exist:
+
+- every teacher ID must exist in `Teachers.json`;
+- every group ID must exist in `Groups.json`;
+- the discipline ID must exist in `Disciplines.json`.
+
+The workload stores discipline relation as `DisciplineId` in JSON.
+Old local files with `SubjectId` are still readable for backward compatibility.
