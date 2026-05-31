@@ -19,16 +19,10 @@ void HandleTeacherCreate(){
     teacher.digital_commission = ui::ReadLine("Введiть цифрову комiсiю: ");
     teacher.quota = ui::ReadUnsignedInt("Введiть максимальну кiлькiсть годин: ");
 
-    OperationResult validation_result = services::ValidateTeacher(teacher);
-    if (!validation_result.success)
+    OperationResult create_result = services::CreateTeacher(teacher);
+    if (!create_result.success)
     {
-        std::cout << validation_result.message << '\n';
-        return;
-    }
-
-    OperationResult save_result = SaveTeacher(teacher);
-    if(!save_result.success){
-        std::cout << save_result.message << '\n';
+        std::cout << create_result.message << '\n';
         return;
     }
 
@@ -54,14 +48,6 @@ void HandleTeachersPrint(){
 
 void HandleTeacherEdit(const unsigned short& id)
 {
-    std::optional<models::Teacher> existing_teacher = GetTeacherById(id);
-
-    if (!existing_teacher.has_value())
-    {
-        std::cout << "Викладача з таким Id не знайдено.\n";
-        return;
-    }
-
     models::Teacher updated_teacher{};
 
     ui::ClearInputLine();
@@ -70,17 +56,10 @@ void HandleTeacherEdit(const unsigned short& id)
     updated_teacher.digital_commission = ui::ReadLine("Введiть нову цифрову комiсiю: ");
     updated_teacher.quota = ui::ReadUnsignedInt("Введiть нову максимальну кiлькiсть годин: ");
 
-    OperationResult validation_result = services::ValidateTeacher(updated_teacher);
-    if (!validation_result.success)
+    OperationResult update_result = services::UpdateTeacher(id, updated_teacher);
+    if (!update_result.success)
     {
-        std::cout << validation_result.message << '\n';
-        return;
-    }
-
-    OperationResult edit_result = EditTeacherById(id, updated_teacher);
-    if (!edit_result.success)
-    {
-        std::cout << edit_result.message << '\n';
+        std::cout << update_result.message << '\n';
         return;
     }
 
@@ -89,17 +68,10 @@ void HandleTeacherEdit(const unsigned short& id)
 
 void HandleTeacherDelete(const unsigned short& id)
 {
-    OperationResult can_delete_result = services::CanDeleteTeacher(id);
-    if (!can_delete_result.success)
+    OperationResult result = services::DeleteTeacher(id);
+    if (!result.success)
     {
-        std::cout << can_delete_result.message << '\n';
-        return;
-    }
-
-    OperationResult delete_result = DeleteTeacherById(id);
-    if (!delete_result.success)
-    {
-        std::cout << delete_result.message << '\n';
+        std::cout << result.message << '\n';
         return;
     }
 
