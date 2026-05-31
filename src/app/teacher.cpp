@@ -1,31 +1,21 @@
 #include "repositories/teacher_repository.h"
 #include "repositories/workload_repository.h"
 #include "headers/teacher.h"
+#include "ui/input.h"
 #include "models.h"
 #include <string>
 #include <iostream>
 #include <optional>
 #include <iomanip>
-#include <limits>
 
 void HandleTeacherCreate(){
     models::Teacher teacher{};
 
-    std::cin.ignore();
+    ui::ClearInputLine();
 
-    std::cout << "Введiть ПIБ: ";
-    std::getline(std::cin, teacher.full_name);
-
-    std::cout << "Введiть цифрову комiсiю: ";
-    std::getline(std::cin, teacher.digital_commission);
-
-    std::cout << "Введiть максимальну кiлькiсть годин: ";
-    while (!(std::cin >> teacher.quota))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Помилка. Введiть число для годин: ";
-    }
+    teacher.full_name = ui::ReadLine("Введiть ПIБ: ");
+    teacher.digital_commission = ui::ReadLine("Введiть цифрову комiсiю: ");
+    teacher.quota = ui::ReadUnsignedInt("Введiть максимальну кiлькiсть годин: ");
 
     if(!SaveTeacher(teacher)){
         std:: cout << "Сталася помилка при збереженнi.";
@@ -72,21 +62,11 @@ void HandleTeacherEdit(const unsigned short& id)
 
     models::Teacher updated_teacher{};
 
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    ui::ClearInputLine();
 
-    std::cout << "Введiть нове ПIБ: ";
-    std::getline(std::cin, updated_teacher.full_name);
-
-    std::cout << "Введiть нову цифрову комiсiю: ";
-    std::getline(std::cin, updated_teacher.digital_commission);
-
-    std::cout << "Введiть нову максимальну кiлькiсть годин: ";
-    while (!(std::cin >> updated_teacher.quota))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Помилка. Введiть число для годин: ";
-    }
+    updated_teacher.full_name = ui::ReadLine("Введiть нове ПIБ: ");
+    updated_teacher.digital_commission = ui::ReadLine("Введiть нову цифрову комiсiю: ");
+    updated_teacher.quota = ui::ReadUnsignedInt("Введiть нову максимальну кiлькiсть годин: ");
 
     if (!EditTeacherById(id, updated_teacher))
     {
