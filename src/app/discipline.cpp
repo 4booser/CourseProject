@@ -10,25 +10,40 @@
 #include <vector>
 #include <optional>
 
+static unsigned int ReadUnsignedInt(const std::string& prompt)
+{
+    unsigned int value = 0;
+
+    std::cout << prompt;
+
+    while (!(std::cin >> value))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Помилка. Введiть число: ";
+    }
+
+    return value;
+}
+
 void HandleDisciplineCreate()
 {
     models::Discipline discipline{};
 
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "Name: ";
+    std::cout << "Введiть назву дисциплiни: ";
     std::getline(std::cin, discipline.name);
 
-    std::cout << "Hours: ";
-    std::cin >> discipline.quota;
+    discipline.quota = ReadUnsignedInt("Введiть кiлькiсть годин дисциплiни: ");
 
     if (!SaveDiscipline(discipline))
     {
-        std::cout << "Save error.\n";
+        std::cout << "Сталася помилка при збереженнi дисциплiни.\n";
         return;
     }
 
-    std::cout << "Saved.\n";
+    std::cout << "Дисциплiну збережено.\n";
 }
 
 void HandleDisciplinesGet()
@@ -59,7 +74,7 @@ void HandleDisciplineEdit(const unsigned short& id)
 
     if (!existing.has_value())
     {
-        std::cout << "Not found.\n";
+        std::cout << "Дисциплiну з таким Id не знайдено.\n";
         return;
     }
 
@@ -67,34 +82,33 @@ void HandleDisciplineEdit(const unsigned short& id)
 
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "New name: ";
+    std::cout << "Введiть нову назву дисциплiни: ";
     std::getline(std::cin, discipline.name);
 
-    std::cout << "New hours: ";
-    std::cin >> discipline.quota;
+    discipline.quota = ReadUnsignedInt("Введiть нову кiлькiсть годин дисциплiни: ");
 
     if (!EditDisciplineById(id, discipline))
     {
-        std::cout << "Edit error.\n";
+        std::cout << "Сталася помилка при редагуваннi дисциплiни.\n";
         return;
     }
 
-    std::cout << "Updated.\n";
+    std::cout << "Дисциплiну оновлено.\n";
 }
 
 void HandleDisciplineDelete(const unsigned short& id)
 {
     if (HasWorkloadForDiscipline(id))
     {
-        std::cout << "Operation blocked: discipline has workloads.\n";
+        std::cout << "Операцiю заблоковано: дисциплiна використовується в навантаженнi.\n";
         return;
     }
 
     if (!RemoveDisciplineById(id))
     {
-        std::cout << "Not found.\n";
+        std::cout << "Дисциплiну з таким Id не знайдено.\n";
         return;
     }
 
-    std::cout << "Removed.\n";
+    std::cout << "Дисциплiну видалено.\n";
 }
