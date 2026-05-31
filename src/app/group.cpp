@@ -2,9 +2,9 @@
 #include "repositories/workload_repository.h"
 #include "headers/group.h"
 #include "ui/input.h"
+#include "ui/table.h"
 #include "models.h"
 #include <iostream>
-#include <iomanip>
 #include <optional>
 #include <string>
 #include <vector>
@@ -32,24 +32,15 @@ void HandleGroupCreate()
 void HandleGroupsGet()
 {
     std::vector<models::Group> groups = GetGroups();
+    const std::vector<int> widths {5, 15, 10, 25};
 
     std::cout << std::endl;
-    std::cout << std::left
-        << std::setw(5)  << "ID"
-        << std::setw(15) << "Name"
-        << std::setw(10) << "Course"
-        << std::setw(25) << "Speciality"
-        << std::endl;
-    std::cout << std::string(55, '-') << std::endl;
+    ui::PrintRow(widths, "ID", "Name", "Course", "Speciality");
+    ui::PrintSeparator(55);
 
     for (const models::Group& group : groups)
     {
-        std::cout << std::left
-            << std::setw(5)  << group.id
-            << std::setw(15) << group.name
-            << std::setw(10) << group.course
-            << std::setw(25) << group.speciality
-            << std::endl;
+        ui::PrintRow(widths, group.id, group.name, group.course, group.speciality);
     }
 }
 
