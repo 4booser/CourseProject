@@ -1,4 +1,5 @@
 #include "repositories/group_repository.h"
+#include "repositories/workload_repository.h"
 #include "headers/group.h"
 #include "models.h"
 #include <iostream>
@@ -104,6 +105,12 @@ void HandleGroupEdit(const unsigned short& id)
 
 void HandleGroupDelete(const unsigned short& id)
 {
+    if (HasWorkloadForGroup(id))
+    {
+        std::cout << "Неможливо видалити групу: вона використовується в навантаженнi.\n";
+        return;
+    }
+
     if (!DeleteGroupById(id))
     {
         std::cout << "Групу з таким Id не знайдено або сталася помилка.\n";
