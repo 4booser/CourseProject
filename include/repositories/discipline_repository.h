@@ -10,3 +10,4 @@ bool SaveDiscipline(models::Discipline& discipline);
 std::vector<models::Discipline> GetDisciplines();
 std::optional<models::Discipline> GetDisciplineById(unsigned short id);
 bool EditDisciplineById(const unsigned short& id, const models::Discipline& updated_discipline);
+bool RemoveDisciplineById(const unsigned short& id);
