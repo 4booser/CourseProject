@@ -1,6 +1,6 @@
 #include "repositories/discipline_repository.h"
-#include "repositories/workload_repository.h"
 #include "headers/discipline.h"
+#include "services/discipline_service.h"
 #include "ui/input.h"
 #include "ui/table.h"
 #include "models.h"
@@ -19,6 +19,13 @@ void HandleDisciplineCreate()
 
     discipline.name = ui::ReadLine("Введiть назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть кiлькiсть годин дисциплiни: ");
+
+    OperationResult validation_result = services::ValidateDiscipline(discipline);
+    if (!validation_result.success)
+    {
+        std::cout << validation_result.message << '\n';
+        return;
+    }
 
     OperationResult save_result = SaveDiscipline(discipline);
     if (!save_result.success)
@@ -61,6 +68,13 @@ void HandleDisciplineEdit(const unsigned short& id)
     discipline.name = ui::ReadLine("Введiть нову назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть нову кiлькiсть годин дисциплiни: ");
 
+    OperationResult validation_result = services::ValidateDiscipline(discipline);
+    if (!validation_result.success)
+    {
+        std::cout << validation_result.message << '\n';
+        return;
+    }
+
     OperationResult edit_result = EditDisciplineById(id, discipline);
     if (!edit_result.success)
     {
@@ -73,9 +87,10 @@ void HandleDisciplineEdit(const unsigned short& id)
 
 void HandleDisciplineDelete(const unsigned short& id)
 {
-    if (HasWorkloadForDiscipline(id))
+    OperationResult can_delete_result = services::CanDeleteDiscipline(id);
+    if (!can_delete_result.success)
     {
-        std::cout << "Операцiю заблоковано: дисциплiна використовується в навантаженнi.\n";
+        std::cout << can_delete_result.message << '\n';
         return;
     }
 
