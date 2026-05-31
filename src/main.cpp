@@ -1,33 +1,24 @@
 #include "headers/teacher.h"
 #include "headers/workload.h"
 #include "headers/discipline.h"
-#include "headers/subject.h"
 #include "headers/group.h"
 #include "ui.h"
-#include <exception>
 #include <iostream>
 #include <cstdlib>
 
 int main()
 {
 #ifdef _WIN32
-system("chcp 65001 > nul");
+    system("chcp 65001 > nul");
 #endif
 
-    //system("chcp 65001>nul");
-
-    unsigned short object, option, id;
+    unsigned short object = 0;
+    unsigned short option = 0;
+    unsigned short id = 0;
 
     do{
         ui::ShowObjects();
-
-        try{
-            std::cin >> object;
-        }
-        catch(const std::exception& exception){
-            
-        }
-        
+        std::cin >> object;
 
         switch(object) {
             case 1:
@@ -134,7 +125,7 @@ system("chcp 65001 > nul");
 
                 break;
             case 0:
-                std::cout << "Вихiд з програми." << std::endl;;
+                std::cout << "Вихiд з програми." << std::endl;
                 break;
             default:
                 std::cout << "Невірний пункт меню." << std::endl;
