@@ -35,7 +35,7 @@ static bool AreTeacherIdsValid(const std::vector<unsigned short>& teacher_ids)
 {
     if (teacher_ids.empty())
     {
-        std::cout << "At least one teacher ID is required.\n";
+        std::cout << "Потрiбно вказати хоча б одного викладача.\n";
         return false;
     }
 
@@ -43,7 +43,7 @@ static bool AreTeacherIdsValid(const std::vector<unsigned short>& teacher_ids)
     {
         if (!GetTeacherById(teacher_id).has_value())
         {
-            std::cout << "Teacher with ID " << teacher_id << " does not exist.\n";
+            std::cout << "Викладача з Id " << teacher_id << " не iснує.\n";
             return false;
         }
     }
@@ -55,7 +55,7 @@ static bool AreGroupIdsValid(const std::vector<unsigned short>& group_ids)
 {
     if (group_ids.empty())
     {
-        std::cout << "At least one group ID is required.\n";
+        std::cout << "Потрiбно вказати хоча б одну групу.\n";
         return false;
     }
 
@@ -63,7 +63,7 @@ static bool AreGroupIdsValid(const std::vector<unsigned short>& group_ids)
     {
         if (!GetGroupById(group_id).has_value())
         {
-            std::cout << "Group with ID " << group_id << " does not exist.\n";
+            std::cout << "Групи з Id " << group_id << " не iснує.\n";
             return false;
         }
     }
@@ -75,7 +75,7 @@ static bool IsDisciplineIdValid(unsigned short discipline_id)
 {
     if (!GetDisciplineById(discipline_id).has_value())
     {
-        std::cout << "Discipline with ID " << discipline_id << " does not exist.\n";
+        std::cout << "Дисциплiни з Id " << discipline_id << " не iснує.\n";
         return false;
     }
 
@@ -87,36 +87,57 @@ static bool IsWorkloadValid(const models::Workload& workload)
     return
         AreTeacherIdsValid(workload.teacher_ids) &&
         AreGroupIdsValid(workload.group_ids) &&
-        IsDisciplineIdValid(workload.subject_id);
+        IsDisciplineIdValid(workload.discipline_id);
+}
+
+static unsigned int ReadUnsignedInt(const std::string& prompt)
+{
+    unsigned int value = 0;
+
+    std::cout << prompt;
+
+    while (!(std::cin >> value))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Помилка. Введiть число: ";
+    }
+
+    return value;
+}
+
+static unsigned short ReadUnsignedShort(const std::string& prompt)
+{
+    unsigned short value = 0;
+
+    std::cout << prompt;
+
+    while (!(std::cin >> value))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Помилка. Введiть число: ";
+    }
+
+    return value;
 }
 
 static void ReadWorkloadFields(models::Workload& workload)
 {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "Teacher IDs: ";
+    std::cout << "Введiть Id викладачiв через пробiл: ";
     workload.teacher_ids = ReadIdsFromLine();
 
-    std::cout << "Group IDs: ";
+    std::cout << "Введiть Id груп через пробiл: ";
     workload.group_ids = ReadIdsFromLine();
 
-    std::cout << "Discipline ID: ";
-    std::cin >> workload.subject_id;
-
-    std::cout << "Lectures: ";
-    std::cin >> workload.lectures;
-
-    std::cout << "Practical classes: ";
-    std::cin >> workload.practical_classes;
-
-    std::cout << "Laboratory classes: ";
-    std::cin >> workload.laboratory_classes;
-
-    std::cout << "Seminars: ";
-    std::cin >> workload.seminars;
-
-    std::cout << "Consultations: ";
-    std::cin >> workload.consultations;
+    workload.discipline_id = ReadUnsignedShort("Введiть Id дисциплiни: ");
+    workload.lectures = ReadUnsignedInt("Введiть кiлькiсть лекцiйних годин: ");
+    workload.practical_classes = ReadUnsignedInt("Введiть кiлькiсть практичних годин: ");
+    workload.laboratory_classes = ReadUnsignedInt("Введiть кiлькiсть лабораторних годин: ");
+    workload.seminars = ReadUnsignedInt("Введiть кiлькiсть семiнарських годин: ");
+    workload.consultations = ReadUnsignedInt("Введiть кiлькiсть годин консультацiй: ");
 
     workload.total_hours =
         workload.lectures +
@@ -134,17 +155,17 @@ void HandleWorkloadCreate()
 
     if (!IsWorkloadValid(workload))
     {
-        std::cout << "Workload was not saved.\n";
+        std::cout << "Навантаження не збережено.\n";
         return;
     }
 
     if (!SaveWorkload(workload))
     {
-        std::cout << "Save error.\n";
+        std::cout << "Сталася помилка при збереженнi навантаження.\n";
         return;
     }
 
-    std::cout << "Workload saved.\n";
+    std::cout << "Навантаження збережено.\n";
 }
 
 void HandleWorkloadsGet()
@@ -194,7 +215,7 @@ void HandleWorkloadsGet()
         std::cout
             << std::setw(15) << teachers_stream.str()
             << std::setw(15) << groups_stream.str()
-            << std::setw(12) << workload.subject_id
+            << std::setw(12) << workload.discipline_id
             << std::setw(10) << workload.lectures
             << std::setw(10) << workload.practical_classes
             << std::setw(10) << workload.laboratory_classes
@@ -211,7 +232,7 @@ void HandleWorkloadEdit(const unsigned short& id)
 
     if (!existing_workload.has_value())
     {
-        std::cout << "Workload not found.\n";
+        std::cout << "Навантаження не знайдено.\n";
         return;
     }
 
@@ -220,26 +241,26 @@ void HandleWorkloadEdit(const unsigned short& id)
 
     if (!IsWorkloadValid(updated_workload))
     {
-        std::cout << "Workload was not updated.\n";
+        std::cout << "Навантаження не оновлено.\n";
         return;
     }
 
     if (!EditWorkloadById(id, updated_workload))
     {
-        std::cout << "Edit error.\n";
+        std::cout << "Сталася помилка при редагуваннi навантаження.\n";
         return;
     }
 
-    std::cout << "Workload updated.\n";
+    std::cout << "Навантаження оновлено.\n";
 }
 
 void HandleWorkloadDelete(const unsigned short& id)
 {
     if (!RemoveWorkloadById(id))
     {
-        std::cout << "Workload not found.\n";
+        std::cout << "Навантаження не знайдено.\n";
         return;
     }
 
-    std::cout << "Workload removed.\n";
+    std::cout << "Навантаження видалено.\n";
 }
