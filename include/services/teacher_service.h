@@ -6,5 +6,7 @@
 namespace services
 {
     OperationResult ValidateTeacher(const models::Teacher& teacher);
-    OperationResult CanDeleteTeacher(unsigned short teacher_id);
+    OperationResult CreateTeacher(models::Teacher& teacher);
+    OperationResult UpdateTeacher(unsigned short teacher_id, const models::Teacher& teacher);
+    OperationResult DeleteTeacher(unsigned short teacher_id);
 }
