@@ -4,15 +4,31 @@
 #include "repositories/discipline_repository.h"
 #include "headers/workload.h"
 #include "ui/input.h"
+#include "ui/table.h"
 #include "models.h"
 
 #include <iostream>
-#include <iomanip>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <limits>
 #include <optional>
+
+static std::string JoinIds(const std::vector<unsigned short>& ids)
+{
+    std::ostringstream stream;
+
+    for (std::size_t i = 0; i < ids.size(); ++i)
+    {
+        stream << ids[i];
+
+        if (i + 1 < ids.size())
+        {
+            stream << ",";
+        }
+    }
+
+    return stream.str();
+}
 
 static bool AreTeacherIdsValid(const std::vector<unsigned short>& teacher_ids)
 {
@@ -75,7 +91,7 @@ static bool IsWorkloadValid(const models::Workload& workload)
 
 static void ReadWorkloadFields(models::Workload& workload)
 {
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    ui::ClearInputLine();
 
     workload.teacher_ids = ui::ReadUnsignedShortList("Введiть Id викладачiв через пробiл: ");
     workload.group_ids = ui::ReadUnsignedShortList("Введiть Id груп через пробiл: ");
@@ -118,58 +134,25 @@ void HandleWorkloadCreate()
 void HandleWorkloadsGet()
 {
     std::vector<models::Workload> workloads = GetWorkloads();
+    const std::vector<int> widths {5, 15, 15, 12, 10, 10, 10, 10, 10, 10};
 
     std::cout << std::endl;
-    std::cout << std::left
-        << std::setw(5)  << "ID"
-        << std::setw(15) << "Teachers"
-        << std::setw(15) << "Groups"
-        << std::setw(12) << "Disc ID"
-        << std::setw(10) << "Lect"
-        << std::setw(10) << "Pract"
-        << std::setw(10) << "Lab"
-        << std::setw(10) << "Sem"
-        << std::setw(10) << "Cons"
-        << std::setw(10) << "Total"
-        << std::endl;
-
-    std::cout << std::string(107, '-') << std::endl;
+    ui::PrintRow(widths, "ID", "Teachers", "Groups", "Disc ID", "Lect", "Pract", "Lab", "Sem", "Cons", "Total");
+    ui::PrintSeparator(107);
 
     for (const models::Workload& workload : workloads)
     {
-        std::cout << std::left << std::setw(5) << workload.id;
-
-        std::ostringstream teachers_stream;
-        for (std::size_t i = 0; i < workload.teacher_ids.size(); ++i)
-        {
-            teachers_stream << workload.teacher_ids[i];
-            if (i + 1 < workload.teacher_ids.size())
-            {
-                teachers_stream << ",";
-            }
-        }
-
-        std::ostringstream groups_stream;
-        for (std::size_t i = 0; i < workload.group_ids.size(); ++i)
-        {
-            groups_stream << workload.group_ids[i];
-            if (i + 1 < workload.group_ids.size())
-            {
-                groups_stream << ",";
-            }
-        }
-
-        std::cout
-            << std::setw(15) << teachers_stream.str()
-            << std::setw(15) << groups_stream.str()
-            << std::setw(12) << workload.discipline_id
-            << std::setw(10) << workload.lectures
-            << std::setw(10) << workload.practical_classes
-            << std::setw(10) << workload.laboratory_classes
-            << std::setw(10) << workload.seminars
-            << std::setw(10) << workload.consultations
-            << std::setw(10) << workload.total_hours
-            << std::endl;
+        ui::PrintRow(widths,
+            workload.id,
+            JoinIds(workload.teacher_ids),
+            JoinIds(workload.group_ids),
+            workload.discipline_id,
+            workload.lectures,
+            workload.practical_classes,
+            workload.laboratory_classes,
+            workload.seminars,
+            workload.consultations,
+            workload.total_hours);
     }
 }
 
