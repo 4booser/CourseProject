@@ -1,6 +1,6 @@
 #include "repositories/group_repository.h"
-#include "repositories/workload_repository.h"
 #include "headers/group.h"
+#include "services/group_service.h"
 #include "ui/input.h"
 #include "ui/table.h"
 #include "models.h"
@@ -20,6 +20,13 @@ void HandleGroupCreate()
     group.course = ui::ReadUnsignedShort("Введiть курс: ");
     ui::ClearInputLine();
     group.speciality = ui::ReadLine("Введiть спецiальнiсть: ");
+
+    OperationResult validation_result = services::ValidateGroup(group);
+    if (!validation_result.success)
+    {
+        std::cout << validation_result.message << '\n';
+        return;
+    }
 
     OperationResult save_result = SaveGroup(group);
     if (!save_result.success)
@@ -65,6 +72,13 @@ void HandleGroupEdit(const unsigned short& id)
     ui::ClearInputLine();
     updated_group.speciality = ui::ReadLine("Введiть нову спецiальнiсть: ");
 
+    OperationResult validation_result = services::ValidateGroup(updated_group);
+    if (!validation_result.success)
+    {
+        std::cout << validation_result.message << '\n';
+        return;
+    }
+
     OperationResult edit_result = EditGroupById(id, updated_group);
     if (!edit_result.success)
     {
@@ -77,9 +91,10 @@ void HandleGroupEdit(const unsigned short& id)
 
 void HandleGroupDelete(const unsigned short& id)
 {
-    if (HasWorkloadForGroup(id))
+    OperationResult can_delete_result = services::CanDeleteGroup(id);
+    if (!can_delete_result.success)
     {
-        std::cout << "Неможливо видалити групу: вона використовується в навантаженнi.\n";
+        std::cout << can_delete_result.message << '\n';
         return;
     }
 
