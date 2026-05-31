@@ -56,7 +56,29 @@ system("chcp 65001 > nul");
                 }
                 break;
             case 2:
+                ui::ShowOptions();
+                std::cin >> option;
 
+                switch(option){
+                    case 1:
+                    HandleDisciplineCreate();
+                        break;
+                    case 2:
+                    HandleDisciplinesGet();
+                        break;
+                    case 3:
+                    HandleDisciplinesGet();
+                    std::cout << "Введiть Id дисциплiни для редагування: ";
+                    std::cin >> id;
+                    HandleDisciplineEdit(id);
+                        break;
+                    case 4:
+                    HandleDisciplinesGet();
+                    std::cout << "Введiть Id дисциплiни для видалення: ";
+                    std::cin >> id;
+                    HandleDisciplineDelete(id);
+                        break;
+                }
                 break;
             case 3:
                 ui::ShowOptions();
