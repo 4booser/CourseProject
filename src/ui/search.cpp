@@ -9,8 +9,10 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iomanip>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -48,9 +50,41 @@ namespace
         return false;
     }
 
+    std::string JoinIds(const std::vector<unsigned short>& ids)
+    {
+        std::ostringstream stream;
+
+        for (std::size_t i = 0; i < ids.size(); ++i)
+        {
+            stream << ids[i];
+
+            if (i + 1 < ids.size())
+            {
+                stream << ',';
+            }
+        }
+
+        return stream.str();
+    }
+
+    void PrintSectionHeader(const std::string& title)
+    {
+        std::cout << "\n=== " << title << " ===\n";
+    }
+
     void SearchTeachers(const std::string& query)
     {
         bool found = false;
+
+        PrintSectionHeader("Викладачi");
+
+        std::cout << std::left
+            << std::setw(5)  << "ID"
+            << std::setw(25) << "Full name"
+            << std::setw(20) << "Commission"
+            << std::setw(10) << "Quota"
+            << '\n';
+        std::cout << std::string(60, '-') << '\n';
 
         for (unsigned short id = 1; id <= GetLastTeacherId(); ++id)
         {
@@ -63,10 +97,12 @@ namespace
 
             if (ContainsIgnoreCase(teacher->full_name, query) || ContainsIgnoreCase(teacher->digital_commission, query))
             {
-                std::cout << "[Teacher] Id: " << teacher->id
-                    << ", Name: " << teacher->full_name
-                    << ", Commission: " << teacher->digital_commission
-                    << ", Quota: " << teacher->quota << '\n';
+                std::cout << std::left
+                    << std::setw(5)  << teacher->id
+                    << std::setw(25) << teacher->full_name
+                    << std::setw(20) << teacher->digital_commission
+                    << std::setw(10) << teacher->quota
+                    << '\n';
                 found = true;
             }
         }
@@ -82,14 +118,26 @@ namespace
         bool found = false;
         std::vector<models::Group> groups = GetGroups();
 
+        PrintSectionHeader("Групи");
+
+        std::cout << std::left
+            << std::setw(5)  << "ID"
+            << std::setw(15) << "Name"
+            << std::setw(10) << "Course"
+            << std::setw(25) << "Speciality"
+            << '\n';
+        std::cout << std::string(55, '-') << '\n';
+
         for (const models::Group& group : groups)
         {
             if (ContainsIgnoreCase(group.name, query) || ContainsIgnoreCase(group.speciality, query))
             {
-                std::cout << "[Group] Id: " << group.id
-                    << ", Name: " << group.name
-                    << ", Course: " << group.course
-                    << ", Speciality: " << group.speciality << '\n';
+                std::cout << std::left
+                    << std::setw(5)  << group.id
+                    << std::setw(15) << group.name
+                    << std::setw(10) << group.course
+                    << std::setw(25) << group.speciality
+                    << '\n';
                 found = true;
             }
         }
@@ -105,13 +153,24 @@ namespace
         bool found = false;
         std::vector<models::Discipline> disciplines = GetDisciplines();
 
+        PrintSectionHeader("Дисциплiни");
+
+        std::cout << std::left
+            << std::setw(5)  << "ID"
+            << std::setw(30) << "Name"
+            << std::setw(10) << "Hours"
+            << '\n';
+        std::cout << std::string(45, '-') << '\n';
+
         for (const models::Discipline& discipline : disciplines)
         {
             if (ContainsIgnoreCase(discipline.name, query))
             {
-                std::cout << "[Discipline] Id: " << discipline.id
-                    << ", Name: " << discipline.name
-                    << ", Hours: " << discipline.quota << '\n';
+                std::cout << std::left
+                    << std::setw(5)  << discipline.id
+                    << std::setw(30) << discipline.name
+                    << std::setw(10) << discipline.quota
+                    << '\n';
                 found = true;
             }
         }
@@ -127,6 +186,17 @@ namespace
         bool found = false;
         std::vector<models::Workload> workloads = GetWorkloads();
 
+        PrintSectionHeader("Навантаження");
+
+        std::cout << std::left
+            << std::setw(5)  << "ID"
+            << std::setw(15) << "Teachers"
+            << std::setw(15) << "Groups"
+            << std::setw(12) << "Disc ID"
+            << std::setw(10) << "Total"
+            << '\n';
+        std::cout << std::string(57, '-') << '\n';
+
         for (const models::Workload& workload : workloads)
         {
             bool matches =
@@ -141,32 +211,13 @@ namespace
                 continue;
             }
 
-            std::cout << "[Workload] Id: " << workload.id
-                << ", DisciplineId: " << workload.discipline_id
-                << ", TotalHours: " << workload.total_hours
-                << ", Teachers: ";
-
-            for (std::size_t i = 0; i < workload.teacher_ids.size(); ++i)
-            {
-                std::cout << workload.teacher_ids[i];
-                if (i + 1 < workload.teacher_ids.size())
-                {
-                    std::cout << ',';
-                }
-            }
-
-            std::cout << ", Groups: ";
-
-            for (std::size_t i = 0; i < workload.group_ids.size(); ++i)
-            {
-                std::cout << workload.group_ids[i];
-                if (i + 1 < workload.group_ids.size())
-                {
-                    std::cout << ',';
-                }
-            }
-
-            std::cout << '\n';
+            std::cout << std::left
+                << std::setw(5)  << workload.id
+                << std::setw(15) << JoinIds(workload.teacher_ids)
+                << std::setw(15) << JoinIds(workload.group_ids)
+                << std::setw(12) << workload.discipline_id
+                << std::setw(10) << workload.total_hours
+                << '\n';
             found = true;
         }
 
