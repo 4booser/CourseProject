@@ -1,8 +1,7 @@
-#include "headers/teacher.h"
-#include "headers/workload.h"
-#include "headers/discipline.h"
-#include "headers/group.h"
 #include "ui.h"
+#include "ui/input.h"
+#include "ui/menu_handlers.h"
+
 #include <iostream>
 #include <cstdlib>
 
@@ -13,116 +12,26 @@ int main()
 #endif
 
     unsigned short object = 0;
-    unsigned short option = 0;
-    unsigned short id = 0;
 
     do{
         ui::ShowObjects();
-        std::cin >> object;
+        object = ui::ReadUnsignedShort("");
 
         switch(object) {
             case 1:
-                ui::ShowOptions();
-                std::cin >> option;
-                
-                switch(option){
-                    case 1:
-                    HandleTeacherCreate();
-                        break;
-                    case 2:
-                    HandleTeachersPrint();
-                        break;
-                    case 3:
-                    HandleTeachersPrint();
-                    std::cout << "Введiть Id викладача для редагування: ";
-                    std::cin >> id;
-                    HandleTeacherEdit(id);
-                        break;
-                    case 4:
-                    std::cout << "Введiть Id викладача для видалення: ";
-                    HandleTeachersPrint();
-                    std::cin >> id;
-                    HandleTeacherDelete(id);
-                        break;
-                }
+                ui::HandleTeacherMenu();
                 break;
             case 2:
-                ui::ShowOptions();
-                std::cin >> option;
-
-                switch(option){
-                    case 1:
-                    HandleDisciplineCreate();
-                        break;
-                    case 2:
-                    HandleDisciplinesGet();
-                        break;
-                    case 3:
-                    HandleDisciplinesGet();
-                    std::cout << "Введiть Id дисциплiни для редагування: ";
-                    std::cin >> id;
-                    HandleDisciplineEdit(id);
-                        break;
-                    case 4:
-                    HandleDisciplinesGet();
-                    std::cout << "Введiть Id дисциплiни для видалення: ";
-                    std::cin >> id;
-                    HandleDisciplineDelete(id);
-                        break;
-                }
+                ui::HandleDisciplineMenu();
                 break;
             case 3:
-                ui::ShowOptions();
-                std::cin >> option;
-
-                switch(option){
-                    case 1:
-                    HandleGroupCreate();
-                        break;
-                    case 2:
-                    HandleGroupsGet();
-                        break;
-                    case 3:
-                    HandleGroupsGet();
-                    std::cout << "Введiть Id групи для редагування: ";
-                    std::cin >> id;
-                    HandleGroupEdit(id);
-                        break;
-                    case 4:
-                    HandleGroupsGet();
-                    std::cout << "Введiть Id групи для видалення: ";
-                    std::cin >> id;
-                    HandleGroupDelete(id);
-                        break;
-                }
+                ui::HandleGroupMenu();
                 break;
             case 4:
-                ui::ShowOptions();
-                std::cin >> option;
-
-                switch(option){
-                    case 1:
-                    HandleWorkloadCreate();
-                        break;
-                    case 2:
-                    HandleWorkloadsGet();
-                        break;
-                    case 3:
-                    HandleWorkloadsGet();
-                    std::cout << "Введiть Id навантаження для редагування: ";
-                    std::cin >> id;
-                    HandleWorkloadEdit(id);
-                        break;
-                    case 4:
-                    HandleWorkloadsGet();
-                    std::cout << "Введiть Id навантаження для видалення: ";
-                    std::cin >> id;
-                    HandleWorkloadDelete(id);
-                        break;
-                }
+                ui::HandleWorkloadMenu();
                 break;
             case 5:
-
+                std::cout << "Пошук поки не реалiзовано.\n";
                 break;
             case 0:
                 std::cout << "Вихiд з програми." << std::endl;
