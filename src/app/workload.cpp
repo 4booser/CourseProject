@@ -1,13 +1,11 @@
 #include "repositories/workload_repository.h"
-#include "repositories/teacher_repository.h"
-#include "repositories/group_repository.h"
-#include "repositories/discipline_repository.h"
 #include "headers/workload.h"
+#include "services/workload_service.h"
+#include "common/operation_result.h"
 #include "ui/input.h"
 #include "ui/table.h"
 #include "models.h"
 
-#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -29,177 +27,6 @@ static std::string JoinIds(const std::vector<unsigned short>& ids)
     }
 
     return stream.str();
-}
-
-static bool ContainsId(const std::vector<unsigned short>& ids, unsigned short id)
-{
-    return std::find(ids.begin(), ids.end(), id) != ids.end();
-}
-
-static bool AreTeacherIdsValid(const std::vector<unsigned short>& teacher_ids)
-{
-    if (teacher_ids.empty())
-    {
-        std::cout << "Потрiбно вказати хоча б одного викладача.\n";
-        return false;
-    }
-
-    for (unsigned short teacher_id : teacher_ids)
-    {
-        if (!GetTeacherById(teacher_id).has_value())
-        {
-            std::cout << "Викладача з Id " << teacher_id << " не iснує.\n";
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static bool AreGroupIdsValid(const std::vector<unsigned short>& group_ids)
-{
-    if (group_ids.empty())
-    {
-        std::cout << "Потрiбно вказати хоча б одну групу.\n";
-        return false;
-    }
-
-    for (unsigned short group_id : group_ids)
-    {
-        if (!GetGroupById(group_id).has_value())
-        {
-            std::cout << "Групи з Id " << group_id << " не iснує.\n";
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static bool IsDisciplineIdValid(unsigned short discipline_id)
-{
-    if (!GetDisciplineById(discipline_id).has_value())
-    {
-        std::cout << "Дисциплiни з Id " << discipline_id << " не iснує.\n";
-        return false;
-    }
-
-    return true;
-}
-
-static unsigned int GetTeacherAssignedHours(unsigned short teacher_id, unsigned short excluded_workload_id)
-{
-    unsigned int total = 0;
-    std::vector<models::Workload> workloads = GetWorkloads();
-
-    for (const models::Workload& workload : workloads)
-    {
-        if (workload.id == excluded_workload_id)
-        {
-            continue;
-        }
-
-        if (ContainsId(workload.teacher_ids, teacher_id))
-        {
-            total += workload.total_hours;
-        }
-    }
-
-    return total;
-}
-
-static unsigned int GetDisciplineAssignedHours(unsigned short discipline_id, unsigned short excluded_workload_id)
-{
-    unsigned int total = 0;
-    std::vector<models::Workload> workloads = GetWorkloads();
-
-    for (const models::Workload& workload : workloads)
-    {
-        if (workload.id == excluded_workload_id)
-        {
-            continue;
-        }
-
-        if (workload.discipline_id == discipline_id)
-        {
-            total += workload.total_hours;
-        }
-    }
-
-    return total;
-}
-
-static bool IsTotalHoursValid(const models::Workload& workload)
-{
-    if (workload.total_hours == 0)
-    {
-        std::cout << "Кiлькiсть годин навантаження не може бути 0.\n";
-        return false;
-    }
-
-    return true;
-}
-
-static bool AreTeacherQuotasValid(const models::Workload& workload, unsigned short excluded_workload_id)
-{
-    for (unsigned short teacher_id : workload.teacher_ids)
-    {
-        std::optional<models::Teacher> teacher = GetTeacherById(teacher_id);
-
-        if (!teacher.has_value())
-        {
-            return false;
-        }
-
-        unsigned int assigned_hours = GetTeacherAssignedHours(teacher_id, excluded_workload_id);
-        unsigned int new_total = assigned_hours + workload.total_hours;
-
-        if (new_total > teacher->quota)
-        {
-            std::cout << "Навантаження викладача з Id " << teacher_id
-                << " перевищує квоту. Поточнi години: " << assigned_hours
-                << ", нове навантаження: " << workload.total_hours
-                << ", квота: " << teacher->quota << ".\n";
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static bool IsDisciplineQuotaValid(const models::Workload& workload, unsigned short excluded_workload_id)
-{
-    std::optional<models::Discipline> discipline = GetDisciplineById(workload.discipline_id);
-
-    if (!discipline.has_value())
-    {
-        return false;
-    }
-
-    unsigned int assigned_hours = GetDisciplineAssignedHours(workload.discipline_id, excluded_workload_id);
-    unsigned int new_total = assigned_hours + workload.total_hours;
-
-    if (new_total > discipline->quota)
-    {
-        std::cout << "Навантаження дисциплiни з Id " << workload.discipline_id
-            << " перевищує кiлькiсть годин дисциплiни. Поточнi години: " << assigned_hours
-            << ", нове навантаження: " << workload.total_hours
-            << ", лiмiт: " << discipline->quota << ".\n";
-        return false;
-    }
-
-    return true;
-}
-
-static bool IsWorkloadValid(const models::Workload& workload, unsigned short excluded_workload_id = 0)
-{
-    return
-        AreTeacherIdsValid(workload.teacher_ids) &&
-        AreGroupIdsValid(workload.group_ids) &&
-        IsDisciplineIdValid(workload.discipline_id) &&
-        IsTotalHoursValid(workload) &&
-        AreTeacherQuotasValid(workload, excluded_workload_id) &&
-        IsDisciplineQuotaValid(workload, excluded_workload_id);
 }
 
 static void ReadWorkloadFields(models::Workload& workload)
@@ -229,8 +56,10 @@ void HandleWorkloadCreate()
 
     ReadWorkloadFields(workload);
 
-    if (!IsWorkloadValid(workload))
+    OperationResult validation_result = services::ValidateWorkload(workload);
+    if (!validation_result.success)
     {
+        std::cout << validation_result.message << '\n';
         std::cout << "Навантаження не збережено.\n";
         return;
     }
@@ -282,8 +111,10 @@ void HandleWorkloadEdit(const unsigned short& id)
     models::Workload updated_workload{};
     ReadWorkloadFields(updated_workload);
 
-    if (!IsWorkloadValid(updated_workload, id))
+    OperationResult validation_result = services::ValidateWorkload(updated_workload, id);
+    if (!validation_result.success)
     {
+        std::cout << validation_result.message << '\n';
         std::cout << "Навантаження не оновлено.\n";
         return;
     }
