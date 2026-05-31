@@ -2,10 +2,10 @@
 #include "repositories/workload_repository.h"
 #include "headers/discipline.h"
 #include "ui/input.h"
+#include "ui/table.h"
 #include "models.h"
 
 #include <iostream>
-#include <iomanip>
 #include <limits>
 #include <string>
 #include <vector>
@@ -15,11 +15,9 @@ void HandleDisciplineCreate()
 {
     models::Discipline discipline{};
 
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    ui::ClearInputLine();
 
-    std::cout << "Введiть назву дисциплiни: ";
-    std::getline(std::cin, discipline.name);
-
+    discipline.name = ui::ReadLine("Введiть назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть кiлькiсть годин дисциплiни: ");
 
     if (!SaveDiscipline(discipline))
@@ -34,22 +32,14 @@ void HandleDisciplineCreate()
 void HandleDisciplinesGet()
 {
     std::vector<models::Discipline> disciplines = GetDisciplines();
+    const std::vector<int> widths {5, 30, 10};
 
-    std::cout << std::left
-        << std::setw(5) << "ID"
-        << std::setw(30) << "Name"
-        << std::setw(10) << "Hours"
-        << std::endl;
-
-    std::cout << std::string(45, '-') << std::endl;
+    ui::PrintRow(widths, "ID", "Name", "Hours");
+    ui::PrintSeparator(45);
 
     for (const models::Discipline& discipline : disciplines)
     {
-        std::cout << std::left
-            << std::setw(5) << discipline.id
-            << std::setw(30) << discipline.name
-            << std::setw(10) << discipline.quota
-            << std::endl;
+        ui::PrintRow(widths, discipline.id, discipline.name, discipline.quota);
     }
 }
 
@@ -65,11 +55,9 @@ void HandleDisciplineEdit(const unsigned short& id)
 
     models::Discipline discipline{};
 
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    ui::ClearInputLine();
 
-    std::cout << "Введiть нову назву дисциплiни: ";
-    std::getline(std::cin, discipline.name);
-
+    discipline.name = ui::ReadLine("Введiть нову назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть нову кiлькiсть годин дисциплiни: ");
 
     if (!EditDisciplineById(id, discipline))
