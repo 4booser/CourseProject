@@ -3,6 +3,7 @@
 #include "repositories/group_repository.h"
 #include "repositories/discipline_repository.h"
 #include "headers/workload.h"
+#include "ui/input.h"
 #include "models.h"
 
 #include <iostream>
@@ -12,24 +13,6 @@
 #include <vector>
 #include <limits>
 #include <optional>
-
-static std::vector<unsigned short> ReadIdsFromLine()
-{
-    std::vector<unsigned short> ids;
-    std::string line;
-
-    std::getline(std::cin, line);
-
-    std::istringstream stream(line);
-    unsigned short id;
-
-    while (stream >> id)
-    {
-        ids.push_back(id);
-    }
-
-    return ids;
-}
 
 static bool AreTeacherIdsValid(const std::vector<unsigned short>& teacher_ids)
 {
@@ -90,54 +73,18 @@ static bool IsWorkloadValid(const models::Workload& workload)
         IsDisciplineIdValid(workload.discipline_id);
 }
 
-static unsigned int ReadUnsignedInt(const std::string& prompt)
-{
-    unsigned int value = 0;
-
-    std::cout << prompt;
-
-    while (!(std::cin >> value))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Помилка. Введiть число: ";
-    }
-
-    return value;
-}
-
-static unsigned short ReadUnsignedShort(const std::string& prompt)
-{
-    unsigned short value = 0;
-
-    std::cout << prompt;
-
-    while (!(std::cin >> value))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Помилка. Введiть число: ";
-    }
-
-    return value;
-}
-
 static void ReadWorkloadFields(models::Workload& workload)
 {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "Введiть Id викладачiв через пробiл: ";
-    workload.teacher_ids = ReadIdsFromLine();
-
-    std::cout << "Введiть Id груп через пробiл: ";
-    workload.group_ids = ReadIdsFromLine();
-
-    workload.discipline_id = ReadUnsignedShort("Введiть Id дисциплiни: ");
-    workload.lectures = ReadUnsignedInt("Введiть кiлькiсть лекцiйних годин: ");
-    workload.practical_classes = ReadUnsignedInt("Введiть кiлькiсть практичних годин: ");
-    workload.laboratory_classes = ReadUnsignedInt("Введiть кiлькiсть лабораторних годин: ");
-    workload.seminars = ReadUnsignedInt("Введiть кiлькiсть семiнарських годин: ");
-    workload.consultations = ReadUnsignedInt("Введiть кiлькiсть годин консультацiй: ");
+    workload.teacher_ids = ui::ReadUnsignedShortList("Введiть Id викладачiв через пробiл: ");
+    workload.group_ids = ui::ReadUnsignedShortList("Введiть Id груп через пробiл: ");
+    workload.discipline_id = ui::ReadUnsignedShort("Введiть Id дисциплiни: ");
+    workload.lectures = ui::ReadUnsignedInt("Введiть кiлькiсть лекцiйних годин: ");
+    workload.practical_classes = ui::ReadUnsignedInt("Введiть кiлькiсть практичних годин: ");
+    workload.laboratory_classes = ui::ReadUnsignedInt("Введiть кiлькiсть лабораторних годин: ");
+    workload.seminars = ui::ReadUnsignedInt("Введiть кiлькiсть семiнарських годин: ");
+    workload.consultations = ui::ReadUnsignedInt("Введiть кiлькiсть годин консультацiй: ");
 
     workload.total_hours =
         workload.lectures +
