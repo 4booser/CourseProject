@@ -1,39 +1,39 @@
-#include <iostream>
 #include "ui.h"
 
-using namespace std;
+#include <iostream>
 
-namespace ui{
-    void ShowObjects(){
-    cout << endl;
-    cout << "========== РОЗПОДІЛ УЧБОВОГО НАВАНТАЖЕННЯ ==========" << endl;
-    cout << endl;
-    cout << "Оберiть об`єкт:" << endl;
-    cout << endl;
-    cout << "1. викладачi" << endl;
-    cout << "2. дисципліни" << endl;
-    cout << "3. групи" << endl;
-    cout << "4. навантаження" << endl;
-    cout << endl;
-    cout << "5. Пошук" << endl;
-    cout << endl;
-    cout << "0. Вихід" << endl;
-    cout << "-----------------------------------------------------";
-    cout << endl;
+namespace ui
+{
+    void ShowObjects()
+    {
+        std::cout << '\n';
+        std::cout << "========== РОЗПОДІЛ УЧБОВОГО НАВАНТАЖЕННЯ ==========" << '\n';
+        std::cout << '\n';
+        std::cout << "Оберiть об`єкт:" << '\n';
+        std::cout << '\n';
+        std::cout << "1. Викладачi" << '\n';
+        std::cout << "2. Дисциплiни" << '\n';
+        std::cout << "3. Групи" << '\n';
+        std::cout << "4. Навантаження" << '\n';
+        std::cout << '\n';
+        std::cout << "5. Пошук" << '\n';
+        std::cout << '\n';
+        std::cout << "0. Вихiд" << '\n';
+        std::cout << "-----------------------------------------------------" << '\n';
     }
 
-    void ShowOptions(){
-    cout << endl;
-    cout << "-----------------------------------------------------";
-    cout << "Оберiть опцiю:" << endl;
-    cout << endl;
-    cout << "1. Додати" << endl;
-    cout << "2. Переглянути " << endl;
-    cout << "3. Редагувати" << endl;
-    cout << "4. Видалити" << endl;
-    cout << endl;
-    cout << "0. Повернутися до об`єктiв.";
-    cout << "-----------------------------------------------------";
-    cout << endl;
+    void ShowOptions()
+    {
+        std::cout << '\n';
+        std::cout << "-----------------------------------------------------" << '\n';
+        std::cout << "Оберiть опцiю:" << '\n';
+        std::cout << '\n';
+        std::cout << "1. Додати" << '\n';
+        std::cout << "2. Переглянути" << '\n';
+        std::cout << "3. Редагувати" << '\n';
+        std::cout << "4. Видалити" << '\n';
+        std::cout << '\n';
+        std::cout << "0. Повернутися до об`єктiв" << '\n';
+        std::cout << "-----------------------------------------------------" << '\n';
     }
 }
