@@ -10,6 +10,7 @@ add_executable(course_project
     src/main.cpp
     src/ui.cpp
     src/ui/input.cpp
+    src/ui/menu_handlers.cpp
     src/app/teacher.cpp
     src/app/group.cpp
     src/app/discipline.cpp
