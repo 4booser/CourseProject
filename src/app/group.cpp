@@ -6,7 +6,6 @@
 #include "models.h"
 #include "common/operation_result.h"
 #include <iostream>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,17 +20,10 @@ void HandleGroupCreate()
     ui::ClearInputLine();
     group.speciality = ui::ReadLine("Введiть спецiальнiсть: ");
 
-    OperationResult validation_result = services::ValidateGroup(group);
-    if (!validation_result.success)
+    OperationResult create_result = services::CreateGroup(group);
+    if (!create_result.success)
     {
-        std::cout << validation_result.message << '\n';
-        return;
-    }
-
-    OperationResult save_result = SaveGroup(group);
-    if (!save_result.success)
-    {
-        std::cout << save_result.message << '\n';
+        std::cout << create_result.message << '\n';
         return;
     }
 
@@ -55,14 +47,6 @@ void HandleGroupsGet()
 
 void HandleGroupEdit(const unsigned short& id)
 {
-    std::optional<models::Group> existing_group = GetGroupById(id);
-
-    if (!existing_group.has_value())
-    {
-        std::cout << "Групу з таким Id не знайдено.\n";
-        return;
-    }
-
     models::Group updated_group{};
 
     ui::ClearInputLine();
@@ -72,17 +56,10 @@ void HandleGroupEdit(const unsigned short& id)
     ui::ClearInputLine();
     updated_group.speciality = ui::ReadLine("Введiть нову спецiальнiсть: ");
 
-    OperationResult validation_result = services::ValidateGroup(updated_group);
-    if (!validation_result.success)
+    OperationResult update_result = services::UpdateGroup(id, updated_group);
+    if (!update_result.success)
     {
-        std::cout << validation_result.message << '\n';
-        return;
-    }
-
-    OperationResult edit_result = EditGroupById(id, updated_group);
-    if (!edit_result.success)
-    {
-        std::cout << edit_result.message << '\n';
+        std::cout << update_result.message << '\n';
         return;
     }
 
@@ -91,14 +68,7 @@ void HandleGroupEdit(const unsigned short& id)
 
 void HandleGroupDelete(const unsigned short& id)
 {
-    OperationResult can_delete_result = services::CanDeleteGroup(id);
-    if (!can_delete_result.success)
-    {
-        std::cout << can_delete_result.message << '\n';
-        return;
-    }
-
-    OperationResult delete_result = DeleteGroupById(id);
+    OperationResult delete_result = services::DeleteGroup(id);
     if (!delete_result.success)
     {
         std::cout << delete_result.message << '\n';
