@@ -99,14 +99,19 @@ unsigned short GetLastWorkloadId()
     return max_id;
 }
 
-bool SaveWorkload(models::Workload& workload)
+OperationResult SaveWorkload(models::Workload& workload)
 {
     json workloads = storage::ReadJsonArray(workload_file_path);
 
     workload.id = GetLastWorkloadId() + 1;
     workloads.push_back(BuildWorkloadJson(workload));
 
-    return storage::WriteJsonArray(workload_file_path, workloads);
+    if (!storage::WriteJsonArray(workload_file_path, workloads))
+    {
+        return OperationResult::Fail("Не вдалося записати файл навантажень.");
+    }
+
+    return OperationResult::Ok();
 }
 
 std::vector<models::Workload> GetWorkloads()
@@ -147,7 +152,7 @@ std::optional<models::Workload> GetWorkloadById(unsigned short id)
     return std::nullopt;
 }
 
-bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_workload)
+OperationResult EditWorkloadById(const unsigned short& id, const models::Workload& updated_workload)
 {
     json workloads = storage::ReadJsonArray(workload_file_path);
     bool was_updated = false;
@@ -166,13 +171,18 @@ bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_
 
     if (!was_updated)
     {
-        return false;
+        return OperationResult::Fail("Навантаження з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(workload_file_path, workloads);
+    if (!storage::WriteJsonArray(workload_file_path, workloads))
+    {
+        return OperationResult::Fail("Не вдалося записати файл навантажень.");
+    }
+
+    return OperationResult::Ok();
 }
 
-bool RemoveWorkloadById(const unsigned short& id)
+OperationResult RemoveWorkloadById(const unsigned short& id)
 {
     json workloads = storage::ReadJsonArray(workload_file_path);
     bool was_removed = false;
@@ -189,10 +199,15 @@ bool RemoveWorkloadById(const unsigned short& id)
 
     if (!was_removed)
     {
-        return false;
+        return OperationResult::Fail("Навантаження з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(workload_file_path, workloads);
+    if (!storage::WriteJsonArray(workload_file_path, workloads))
+    {
+        return OperationResult::Fail("Не вдалося записати файл навантажень.");
+    }
+
+    return OperationResult::Ok();
 }
 
 bool HasWorkloadForTeacher(unsigned short teacher_id)
