@@ -5,7 +5,7 @@
 
 unsigned short GetNextWorkloadId();
 
-void SaveWorkload(const models::Workload& workload);
+bool SaveWorkload(models::Workload& workload);
 std::vector<models::Workload> GetWorkloads();
-void EditWorkload(unsigned short& id);
-void DeleteWorkload(unsigned short& id);
+bool EditWorkload(unsigned short& id);
+bool DeleteWorkload(unsigned short& id);

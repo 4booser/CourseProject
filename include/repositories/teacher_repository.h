@@ -5,7 +5,7 @@
 
 unsigned short GetNextTeacherId();
 
-bool SaveTeacher(const models::Teacher& teacher);
+bool SaveTeacher(models::Teacher& teacher);
 std::vector<models::Teacher> GetTeachers();
 bool EditTeacher(unsigned short& id);
 bool DeleteTeacher(unsigned short& id);

@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-bool SaveWorkload(const models::Workload& workload){
+bool SaveWorkload(models::Workload& workload){
     json data ={
         {"Id", workload.id},
         {"TeachersIds", workload.teacher_ids},
@@ -21,9 +21,7 @@ bool SaveWorkload(const models::Workload& workload){
     };
     std::ofstream file("Workloads.json");
 
-    if (!file.is_open())
-    {
-        return;
-    }
+    if (!file.is_open()) { return false; }
     file << data.dump(2);
+    return true;
 }

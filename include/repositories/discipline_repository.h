@@ -5,7 +5,7 @@
 
 unsigned short GetNextDisciplineId();
 
-bool SaveDiscipline(const models::Discipline& discipline);
+bool SaveDiscipline(models::Discipline& discipline);
 std::vector<models::Discipline> GetDisciplines();
 bool EditDiscipline(unsigned short& id);
 bool DeleteDiscipline(unsigned short& id);

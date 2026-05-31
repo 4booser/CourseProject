@@ -28,7 +28,7 @@ namespace ui{
     cout << "Оберiть опцiю:" << endl;
     cout << endl;
     cout << "1. Додати" << endl;
-    cout << "2. Прочитати " << endl;
+    cout << "2. Переглянути " << endl;
     cout << "3. Редагувати" << endl;
     cout << "4. Видалити" << endl;
     cout << endl;

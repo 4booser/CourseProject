@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-bool SaveGroup(const models::Group& group){
+bool SaveGroup(models::Group& group){
     json data = {
         {"Id", group.id},
         {"Name", group.name},
@@ -17,5 +17,6 @@ bool SaveGroup(const models::Group& group){
 
     if (!file.is_open()){ return false; }
     file << data.dump(2);
+    return true;
 }
 

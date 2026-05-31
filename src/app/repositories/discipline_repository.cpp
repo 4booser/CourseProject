@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-bool SaveDiscipline(const models::Discipline& discipline){
+bool SaveDiscipline(models::Discipline& discipline){
     json data = {
         {"Id", discipline.id},
         {"Name", discipline.name},
@@ -14,9 +14,7 @@ bool SaveDiscipline(const models::Discipline& discipline){
     };
     std::ofstream file("Disciplines.json");
 
-    if (!file.is_open())
-    {
-        return;
-    }
+    if (!file.is_open()) { return false; }
     file << data.dump(2);
+    return true;
 }

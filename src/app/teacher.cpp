@@ -7,6 +7,8 @@
 void HandleTeacherCreate(){
     models::Teacher teacher{};
 
+    std::cin.ignore();
+
     std::cout << "Введiть ПIБ: ";
     std::getline(std::cin, teacher.full_name);
 
@@ -21,7 +23,9 @@ void HandleTeacherCreate(){
         std::cout << "Помилка. Введiть число для годин: ";
     }
 
-    SaveTeacher(teacher);
+    if(!SaveTeacher(teacher)){
+        std:: cout << "Сталася помилка при збереженнi.";
+    }
 
     std::cout << "\nВикладача збережено.\n";
 }

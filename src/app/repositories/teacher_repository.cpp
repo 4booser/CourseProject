@@ -12,36 +12,38 @@ unsigned short GetNextTeacherId()
 {
     std::ifstream input_file(file_path);
 
-    if (!input_file.is_open()){ return 1; }
+    if (!input_file.is_open())
+    {
+        return 1;
+    }
 
     json teachers;
 
-    try{
+    try
+    {
         input_file >> teachers;
     }
-    catch (...) { return 1; }
-
-    if (!teachers.is_array() || teachers.empty()) { return 1; }
-
-    unsigned short max_id = 0;
-
-    for (const auto& teacher : teachers)
+    catch (...)
     {
-        if (teacher.contains("Id") && teacher["Id"].is_number_unsigned())
-        {
-            unsigned short id = teacher["Id"].get<unsigned short>();
-
-            if (id > max_id)
-            {
-                max_id = id;
-            }
-        }
+        return 1;
     }
 
-    return max_id + 1;
+    if (!teachers.is_array() || teachers.empty())
+    {
+        return 1;
+    }
+
+    const auto& last_teacher = teachers.back();
+
+    if (!last_teacher.contains("Id"))
+    {
+        return 1;
+    }
+
+    return last_teacher["Id"].get<unsigned short>() + 1;
 }
 
-bool SaveTeacher(const models::Teacher& teacher){
+bool SaveTeacher(models::Teacher& teacher){
     json teachers = json::array();
 
     std::ifstream input_file(file_path);
@@ -61,6 +63,8 @@ bool SaveTeacher(const models::Teacher& teacher){
     {
         teachers = json::array();
     }
+
+    teacher.id = GetNextTeacherId();
 
     json teacher_json ={
         {"Id", teacher.id},

@@ -26,7 +26,7 @@ namespace models{
     struct Workload{
     unsigned short id;
     std::vector<unsigned short> teacher_ids;
-    unsigned short subjectId;
+    unsigned short subject_id;
     std::vector<unsigned short> group_ids;
     unsigned int lectures;
     unsigned int practical_classes;
