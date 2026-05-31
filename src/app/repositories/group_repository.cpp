@@ -69,14 +69,19 @@ unsigned short GetLastGroupId()
     return max_id;
 }
 
-bool SaveGroup(models::Group& group)
+OperationResult SaveGroup(models::Group& group)
 {
     json groups = storage::ReadJsonArray(group_file_path);
 
     group.id = GetLastGroupId() + 1;
     groups.push_back(BuildGroupJson(group));
 
-    return storage::WriteJsonArray(group_file_path, groups);
+    if (!storage::WriteJsonArray(group_file_path, groups))
+    {
+        return OperationResult::Fail("Не вдалося записати файл груп.");
+    }
+
+    return OperationResult::Ok();
 }
 
 std::vector<models::Group> GetGroups()
@@ -117,7 +122,7 @@ std::optional<models::Group> GetGroupById(unsigned short id)
     return std::nullopt;
 }
 
-bool EditGroupById(const unsigned short& id, const models::Group& updated_group)
+OperationResult EditGroupById(const unsigned short& id, const models::Group& updated_group)
 {
     json groups = storage::ReadJsonArray(group_file_path);
     bool was_updated = false;
@@ -136,13 +141,18 @@ bool EditGroupById(const unsigned short& id, const models::Group& updated_group)
 
     if (!was_updated)
     {
-        return false;
+        return OperationResult::Fail("Групу з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(group_file_path, groups);
+    if (!storage::WriteJsonArray(group_file_path, groups))
+    {
+        return OperationResult::Fail("Не вдалося записати файл груп.");
+    }
+
+    return OperationResult::Ok();
 }
 
-bool DeleteGroupById(const unsigned short& id)
+OperationResult DeleteGroupById(const unsigned short& id)
 {
     json groups = storage::ReadJsonArray(group_file_path);
     bool was_deleted = false;
@@ -159,8 +169,13 @@ bool DeleteGroupById(const unsigned short& id)
 
     if (!was_deleted)
     {
-        return false;
+        return OperationResult::Fail("Групу з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(group_file_path, groups);
+    if (!storage::WriteJsonArray(group_file_path, groups))
+    {
+        return OperationResult::Fail("Не вдалося записати файл груп.");
+    }
+
+    return OperationResult::Ok();
 }
