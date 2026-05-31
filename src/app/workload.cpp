@@ -64,9 +64,10 @@ void HandleWorkloadCreate()
         return;
     }
 
-    if (!SaveWorkload(workload))
+    OperationResult save_result = SaveWorkload(workload);
+    if (!save_result.success)
     {
-        std::cout << "Сталася помилка при збереженнi навантаження.\n";
+        std::cout << save_result.message << '\n';
         return;
     }
 
@@ -119,9 +120,10 @@ void HandleWorkloadEdit(const unsigned short& id)
         return;
     }
 
-    if (!EditWorkloadById(id, updated_workload))
+    OperationResult edit_result = EditWorkloadById(id, updated_workload);
+    if (!edit_result.success)
     {
-        std::cout << "Сталася помилка при редагуваннi навантаження.\n";
+        std::cout << edit_result.message << '\n';
         return;
     }
 
@@ -130,9 +132,10 @@ void HandleWorkloadEdit(const unsigned short& id)
 
 void HandleWorkloadDelete(const unsigned short& id)
 {
-    if (!RemoveWorkloadById(id))
+    OperationResult remove_result = RemoveWorkloadById(id);
+    if (!remove_result.success)
     {
-        std::cout << "Навантаження не знайдено.\n";
+        std::cout << remove_result.message << '\n';
         return;
     }
 
