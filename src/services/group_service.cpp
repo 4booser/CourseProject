@@ -2,12 +2,13 @@
 
 #include "repositories/group_repository.h"
 #include "repositories/workload_repository.h"
+#include "utils/string_utils.h"
 
 namespace services
 {
     OperationResult ValidateGroup(const models::Group& group)
     {
-        if (group.name.empty())
+        if (utils::IsBlank(group.name))
         {
             return OperationResult::Fail("Назва групи не може бути порожньою.");
         }
@@ -17,7 +18,7 @@ namespace services
             return OperationResult::Fail("Курс групи повинен бути в межах 1-4.");
         }
 
-        if (group.speciality.empty())
+        if (utils::IsBlank(group.speciality))
         {
             return OperationResult::Fail("Спецiальнiсть групи не може бути порожньою.");
         }
