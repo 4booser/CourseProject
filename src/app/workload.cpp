@@ -28,19 +28,6 @@ static std::vector<unsigned short> ReadIdsFromLine()
     return ids;
 }
 
-static void PrintIds(const std::vector<unsigned short>& ids)
-{
-    for (std::size_t i = 0; i < ids.size(); ++i)
-    {
-        std::cout << ids[i];
-
-        if (i + 1 < ids.size())
-        {
-            std::cout << ",";
-        }
-    }
-}
-
 static void ReadWorkloadFields(models::Workload& workload)
 {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
