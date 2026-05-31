@@ -2,10 +2,12 @@
 
 #include "models.h"
 #include <vector>
+#include <optional>
 
 unsigned short GetLastGroupId();
 
-bool SaveGrouop(models::Group& group);
+bool SaveGroup(models::Group& group);
 std::vector<models::Group> GetGroups();
-bool EditGroup(unsigned short& id);
-bool DeleteGroup(unsigned short& id);
+std::optional<models::Group> GetGroupById(unsigned short id);
+bool EditGroupById(const unsigned short& id, const models::Group& updated_group);
+bool DeleteGroupById(const unsigned short& id);
