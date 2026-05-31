@@ -4,9 +4,9 @@
 #include "ui/input.h"
 #include "ui/table.h"
 #include "models.h"
+#include "common/operation_result.h"
 
 #include <iostream>
-#include <limits>
 #include <string>
 #include <vector>
 #include <optional>
@@ -20,9 +20,10 @@ void HandleDisciplineCreate()
     discipline.name = ui::ReadLine("Введiть назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть кiлькiсть годин дисциплiни: ");
 
-    if (!SaveDiscipline(discipline))
+    OperationResult save_result = SaveDiscipline(discipline);
+    if (!save_result.success)
     {
-        std::cout << "Сталася помилка при збереженнi дисциплiни.\n";
+        std::cout << save_result.message << '\n';
         return;
     }
 
@@ -60,9 +61,10 @@ void HandleDisciplineEdit(const unsigned short& id)
     discipline.name = ui::ReadLine("Введiть нову назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть нову кiлькiсть годин дисциплiни: ");
 
-    if (!EditDisciplineById(id, discipline))
+    OperationResult edit_result = EditDisciplineById(id, discipline);
+    if (!edit_result.success)
     {
-        std::cout << "Сталася помилка при редагуваннi дисциплiни.\n";
+        std::cout << edit_result.message << '\n';
         return;
     }
 
@@ -77,9 +79,10 @@ void HandleDisciplineDelete(const unsigned short& id)
         return;
     }
 
-    if (!RemoveDisciplineById(id))
+    OperationResult remove_result = RemoveDisciplineById(id);
+    if (!remove_result.success)
     {
-        std::cout << "Дисциплiну з таким Id не знайдено.\n";
+        std::cout << remove_result.message << '\n';
         return;
     }
 
