@@ -1,64 +1,18 @@
 #include "repositories/group_repository.h"
+#include "storage/json_storage.h"
 #include <nlohmann/json.hpp>
-#include <fstream>
-#include <filesystem>
 #include <optional>
 #include <algorithm>
 #include "models.h"
 #include <vector>
 
 using json = nlohmann::json;
-namespace fs = std::filesystem;
 
 const std::string group_file_path = "Output/Groups.json";
 
-static json ReadGroupsJson()
-{
-    std::ifstream input_file(group_file_path);
-
-    if (!input_file.is_open())
-    {
-        return json::array();
-    }
-
-    json groups;
-
-    try
-    {
-        input_file >> groups;
-    }
-    catch (...)
-    {
-        return json::array();
-    }
-
-    if (!groups.is_array())
-    {
-        return json::array();
-    }
-
-    return groups;
-}
-
-static bool WriteGroupsJson(const json& groups)
-{
-    fs::path path(group_file_path);
-    fs::create_directories(path.parent_path());
-
-    std::ofstream output_file(group_file_path);
-
-    if (!output_file.is_open())
-    {
-        return false;
-    }
-
-    output_file << groups.dump(2);
-    return true;
-}
-
 unsigned short GetLastGroupId()
 {
-    json groups = ReadGroupsJson();
+    json groups = storage::ReadJsonArray(group_file_path);
     unsigned short max_id = 0;
 
     for (const auto& group_json : groups)
@@ -74,7 +28,7 @@ unsigned short GetLastGroupId()
 
 bool SaveGroup(models::Group& group)
 {
-    json groups = ReadGroupsJson();
+    json groups = storage::ReadJsonArray(group_file_path);
 
     group.id = GetLastGroupId() + 1;
 
@@ -87,13 +41,13 @@ bool SaveGroup(models::Group& group)
 
     groups.push_back(group_json);
 
-    return WriteGroupsJson(groups);
+    return storage::WriteJsonArray(group_file_path, groups);
 }
 
 std::vector<models::Group> GetGroups()
 {
     std::vector<models::Group> result;
-    json groups = ReadGroupsJson();
+    json groups = storage::ReadJsonArray(group_file_path);
 
     for (const auto& group_json : groups)
     {
@@ -116,7 +70,7 @@ std::vector<models::Group> GetGroups()
 
 std::optional<models::Group> GetGroupById(unsigned short id)
 {
-    json groups = ReadGroupsJson();
+    json groups = storage::ReadJsonArray(group_file_path);
 
     for (const auto& group_json : groups)
     {
@@ -142,7 +96,7 @@ std::optional<models::Group> GetGroupById(unsigned short id)
 
 bool EditGroupById(const unsigned short& id, const models::Group& updated_group)
 {
-    json groups = ReadGroupsJson();
+    json groups = storage::ReadJsonArray(group_file_path);
     bool was_updated = false;
 
     for (auto& group_json : groups)
@@ -162,12 +116,12 @@ bool EditGroupById(const unsigned short& id, const models::Group& updated_group)
         return false;
     }
 
-    return WriteGroupsJson(groups);
+    return storage::WriteJsonArray(group_file_path, groups);
 }
 
 bool DeleteGroupById(const unsigned short& id)
 {
-    json groups = ReadGroupsJson();
+    json groups = storage::ReadJsonArray(group_file_path);
     bool was_deleted = false;
 
     for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -185,5 +139,5 @@ bool DeleteGroupById(const unsigned short& id)
         return false;
     }
 
-    return WriteGroupsJson(groups);
+    return storage::WriteJsonArray(group_file_path, groups);
 }
