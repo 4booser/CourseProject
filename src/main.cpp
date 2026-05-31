@@ -1,6 +1,7 @@
 #include "ui.h"
 #include "ui/input.h"
 #include "ui/menu_handlers.h"
+#include "ui/search.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -31,7 +32,7 @@ int main()
                 ui::HandleWorkloadMenu();
                 break;
             case 5:
-                std::cout << "Пошук поки не реалiзовано.\n";
+                ui::HandleSearchMenu();
                 break;
             case 0:
                 std::cout << "Вихiд з програми." << std::endl;
