@@ -188,4 +188,36 @@ namespace services
 
         return ValidateDisciplineQuota(workload, excluded_workload_id);
     }
+
+    OperationResult CreateWorkload(models::Workload& workload)
+    {
+        OperationResult validation_result = ValidateWorkload(workload);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return SaveWorkload(workload);
+    }
+
+    OperationResult UpdateWorkload(unsigned short workload_id, const models::Workload& workload)
+    {
+        if (!GetWorkloadById(workload_id).has_value())
+        {
+            return OperationResult::Fail("Навантаження з таким Id не знайдено.");
+        }
+
+        OperationResult validation_result = ValidateWorkload(workload, workload_id);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return EditWorkloadById(workload_id, workload);
+    }
+
+    OperationResult DeleteWorkload(unsigned short workload_id)
+    {
+        return RemoveWorkloadById(workload_id);
+    }
 }
