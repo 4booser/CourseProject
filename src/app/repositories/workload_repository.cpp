@@ -165,3 +165,48 @@ bool RemoveWorkloadById(const unsigned short& id)
 
     return storage::WriteJsonArray(workload_file_path, workloads);
 }
+
+bool HasWorkloadForTeacher(unsigned short teacher_id)
+{
+    std::vector<models::Workload> workloads = GetWorkloads();
+
+    for (const models::Workload& workload : workloads)
+    {
+        if (std::find(workload.teacher_ids.begin(), workload.teacher_ids.end(), teacher_id) != workload.teacher_ids.end())
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool HasWorkloadForGroup(unsigned short group_id)
+{
+    std::vector<models::Workload> workloads = GetWorkloads();
+
+    for (const models::Workload& workload : workloads)
+    {
+        if (std::find(workload.group_ids.begin(), workload.group_ids.end(), group_id) != workload.group_ids.end())
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool HasWorkloadForDiscipline(unsigned short discipline_id)
+{
+    std::vector<models::Workload> workloads = GetWorkloads();
+
+    for (const models::Workload& workload : workloads)
+    {
+        if (workload.discipline_id == discipline_id)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
