@@ -3,6 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include <optional>
+#include <algorithm>
 #include "models.h"
 #include <vector>
 
@@ -58,20 +59,17 @@ static bool WriteDisciplinesJson(const json& disciplines)
 unsigned short GetLastDisciplineId()
 {
     json disciplines = ReadDisciplinesJson();
+    unsigned short max_id = 0;
 
-    if (disciplines.empty())
+    for (const auto& discipline_json : disciplines)
     {
-        return 0;
+        if (discipline_json.contains("Id"))
+        {
+            max_id = std::max(max_id, discipline_json["Id"].get<unsigned short>());
+        }
     }
 
-    const auto& last_discipline = disciplines.back();
-
-    if (!last_discipline.contains("Id"))
-    {
-        return 0;
-    }
-
-    return last_discipline["Id"].get<unsigned short>();
+    return max_id;
 }
 
 bool SaveDiscipline(models::Discipline& discipline)
