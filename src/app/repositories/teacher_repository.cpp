@@ -129,12 +129,114 @@ std::optional<models::Teacher> GetTeacherById(unsigned short id)
     return std::nullopt;
 }
 
-bool EditTeacherById(const unsigned short& id){
+bool EditTeacherById(const unsigned short& id, const models::Teacher& updated_teacher)
+{
+    std::ifstream input_file(file_path);
 
+    if (!input_file.is_open())
+    {
+        return false;
+    }
+
+    json teachers;
+
+    try
+    {
+        input_file >> teachers;
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    input_file.close();
+
+    if (!teachers.is_array())
+    {
+        return false;
+    }
+
+    bool was_updated = false;
+
+    for (auto& teacher_json : teachers)
+    {
+        if (teacher_json.contains("Id") && teacher_json["Id"].get<unsigned short>() == id)
+        {
+            teacher_json["FullName"] = updated_teacher.full_name;
+            teacher_json["DigitalCommission"] = updated_teacher.digital_commission;
+            teacher_json["Quota"] = updated_teacher.quota;
+            was_updated = true;
+            break;
+        }
+    }
+
+    if (!was_updated)
+    {
+        return false;
+    }
+
+    std::ofstream output_file(file_path);
+
+    if (!output_file.is_open())
+    {
+        return false;
+    }
+
+    output_file << teachers.dump(2);
     return true;
 }
 
-bool DeleteTeacherById(const unsigned short& id){
-    
+bool DeleteTeacherById(const unsigned short& id)
+{
+    std::ifstream input_file(file_path);
+
+    if (!input_file.is_open())
+    {
+        return false;
+    }
+
+    json teachers;
+
+    try
+    {
+        input_file >> teachers;
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    input_file.close();
+
+    if (!teachers.is_array())
+    {
+        return false;
+    }
+
+    bool was_deleted = false;
+
+    for (auto it = teachers.begin(); it != teachers.end(); ++it)
+    {
+        if (it->contains("Id") && (*it)["Id"].get<unsigned short>() == id)
+        {
+            teachers.erase(it);
+            was_deleted = true;
+            break;
+        }
+    }
+
+    if (!was_deleted)
+    {
+        return false;
+    }
+
+    std::ofstream output_file(file_path);
+
+    if (!output_file.is_open())
+    {
+        return false;
+    }
+
+    output_file << teachers.dump(2);
     return true;
 }
