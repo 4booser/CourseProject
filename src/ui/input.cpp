@@ -6,6 +6,21 @@
 
 namespace ui
 {
+    void ClearInputLine()
+    {
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
+    std::string ReadLine(const std::string& prompt)
+    {
+        std::string value;
+
+        std::cout << prompt;
+        std::getline(std::cin, value);
+
+        return value;
+    }
+
     unsigned int ReadUnsignedInt(const std::string& prompt)
     {
         unsigned int value = 0;
@@ -15,7 +30,7 @@ namespace ui
         while (!(std::cin >> value))
         {
             std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            ClearInputLine();
             std::cout << "Помилка. Введiть число: ";
         }
 
@@ -31,7 +46,7 @@ namespace ui
         while (!(std::cin >> value))
         {
             std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            ClearInputLine();
             std::cout << "Помилка. Введiть число: ";
         }
 
