@@ -1,42 +1,18 @@
 #include "repositories/teacher_repository.h"
+#include "storage/json_storage.h"
 #include <nlohmann/json.hpp>
-#include <fstream>
-#include <filesystem>
 #include <optional>
 #include <algorithm>
 #include "models.h"
 #include <vector>
 
 using json = nlohmann::json;
-namespace fs = std::filesystem;
 
 const std::string file_path = "Output/Teachers.json";
 
 unsigned short GetLastTeacherId()
 {
-    std::ifstream input_file(file_path);
-
-    if (!input_file.is_open())
-    {
-        return 0;
-    }
-
-    json teachers;
-
-    try
-    {
-        input_file >> teachers;
-    }
-    catch (...)
-    {
-        return 0;
-    }
-
-    if (!teachers.is_array() || teachers.empty())
-    {
-        return 0;
-    }
-
+    json teachers = storage::ReadJsonArray(file_path);
     unsigned short max_id = 0;
 
     for (const auto& teacher_json : teachers)
@@ -52,31 +28,7 @@ unsigned short GetLastTeacherId()
 
 bool SaveTeacher(models::Teacher& teacher)
 {
-    json teachers = json::array();
-
-    fs::path path(file_path);
-    fs::create_directories(path.parent_path());
-
-    std::ifstream input_file(file_path);
-
-    if (input_file.is_open())
-    {
-        try
-        {
-            input_file >> teachers;
-
-            if (!teachers.is_array())
-            {
-                teachers = json::array();
-            }
-        }
-        catch (...)
-        {
-            teachers = json::array();
-        }
-
-        input_file.close();
-    }
+    json teachers = storage::ReadJsonArray(file_path);
 
     teacher.id = GetLastTeacherId() + 1;
 
@@ -89,29 +41,12 @@ bool SaveTeacher(models::Teacher& teacher)
 
     teachers.push_back(teacher_json);
 
-    std::ofstream output_file(file_path);
-
-    if (!output_file.is_open())
-    {
-        return false;
-    }
-
-    output_file << teachers.dump(2);
-    return true;
+    return storage::WriteJsonArray(file_path, teachers);
 }
 
 std::optional<models::Teacher> GetTeacherById(unsigned short id)
 {
-    std::ifstream input_file(file_path);
-
-    if (!input_file.is_open()){ return std::nullopt; }
-
-    json teachers;
-
-    try{ input_file >> teachers; }
-    catch (...){  return std::nullopt; }
-
-    if (!teachers.is_array()) { return std::nullopt; }
+    json teachers = storage::ReadJsonArray(file_path);
 
     for (const auto& teacher_json : teachers)
     {
@@ -135,31 +70,7 @@ std::optional<models::Teacher> GetTeacherById(unsigned short id)
 
 bool EditTeacherById(const unsigned short& id, const models::Teacher& updated_teacher)
 {
-    std::ifstream input_file(file_path);
-
-    if (!input_file.is_open())
-    {
-        return false;
-    }
-
-    json teachers;
-
-    try
-    {
-        input_file >> teachers;
-    }
-    catch (...)
-    {
-        return false;
-    }
-
-    input_file.close();
-
-    if (!teachers.is_array())
-    {
-        return false;
-    }
-
+    json teachers = storage::ReadJsonArray(file_path);
     bool was_updated = false;
 
     for (auto& teacher_json : teachers)
@@ -179,44 +90,12 @@ bool EditTeacherById(const unsigned short& id, const models::Teacher& updated_te
         return false;
     }
 
-    std::ofstream output_file(file_path);
-
-    if (!output_file.is_open())
-    {
-        return false;
-    }
-
-    output_file << teachers.dump(2);
-    return true;
+    return storage::WriteJsonArray(file_path, teachers);
 }
 
 bool DeleteTeacherById(const unsigned short& id)
 {
-    std::ifstream input_file(file_path);
-
-    if (!input_file.is_open())
-    {
-        return false;
-    }
-
-    json teachers;
-
-    try
-    {
-        input_file >> teachers;
-    }
-    catch (...)
-    {
-        return false;
-    }
-
-    input_file.close();
-
-    if (!teachers.is_array())
-    {
-        return false;
-    }
-
+    json teachers = storage::ReadJsonArray(file_path);
     bool was_deleted = false;
 
     for (auto it = teachers.begin(); it != teachers.end(); ++it)
@@ -234,13 +113,5 @@ bool DeleteTeacherById(const unsigned short& id)
         return false;
     }
 
-    std::ofstream output_file(file_path);
-
-    if (!output_file.is_open())
-    {
-        return false;
-    }
-
-    output_file << teachers.dump(2);
-    return true;
+    return storage::WriteJsonArray(file_path, teachers);
 }
