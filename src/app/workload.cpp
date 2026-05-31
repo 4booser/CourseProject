@@ -161,5 +161,11 @@ void HandleWorkloadEdit(const unsigned short& id)
 
 void HandleWorkloadDelete(const unsigned short& id)
 {
-    std::cout << "Workload delete is not implemented yet. Id: " << id << std::endl;
+    if (!RemoveWorkloadById(id))
+    {
+        std::cout << "Workload not found.\n";
+        return;
+    }
+
+    std::cout << "Workload removed.\n";
 }
