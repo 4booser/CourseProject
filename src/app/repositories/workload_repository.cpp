@@ -10,15 +10,45 @@ using json = nlohmann::json;
 
 const std::string workload_file_path = "Output/Workloads.json";
 
+static bool HasId(const json& object)
+{
+    return object.contains("id") || object.contains("Id");
+}
+
+static unsigned short ReadId(const json& object)
+{
+    if (object.contains("id"))
+    {
+        return object["id"].get<unsigned short>();
+    }
+
+    return object["Id"].get<unsigned short>();
+}
+
+template <typename T>
+static T ReadField(const json& object, const char* snake_case_key, const char* pascal_case_key)
+{
+    if (object.contains(snake_case_key))
+    {
+        return object[snake_case_key].get<T>();
+    }
+
+    return object[pascal_case_key].get<T>();
+}
+
 static models::Workload ParseWorkload(const json& workload_json)
 {
     models::Workload workload{};
 
-    workload.id = workload_json["Id"].get<unsigned short>();
-    workload.teacher_ids = workload_json["TeachersIds"].get<std::vector<unsigned short>>();
-    workload.group_ids = workload_json["GroupIds"].get<std::vector<unsigned short>>();
+    workload.id = ReadId(workload_json);
+    workload.teacher_ids = ReadField<std::vector<unsigned short>>(workload_json, "teacher_ids", "TeachersIds");
+    workload.group_ids = ReadField<std::vector<unsigned short>>(workload_json, "group_ids", "GroupIds");
 
-    if (workload_json.contains("DisciplineId"))
+    if (workload_json.contains("discipline_id"))
+    {
+        workload.discipline_id = workload_json["discipline_id"].get<unsigned short>();
+    }
+    else if (workload_json.contains("DisciplineId"))
     {
         workload.discipline_id = workload_json["DisciplineId"].get<unsigned short>();
     }
@@ -27,12 +57,12 @@ static models::Workload ParseWorkload(const json& workload_json)
         workload.discipline_id = workload_json["SubjectId"].get<unsigned short>();
     }
 
-    workload.lectures = workload_json["Lectures"].get<unsigned int>();
-    workload.practical_classes = workload_json["PracticalClasses"].get<unsigned int>();
-    workload.laboratory_classes = workload_json["LaboratoryClasses"].get<unsigned int>();
-    workload.seminars = workload_json["Seminars"].get<unsigned int>();
-    workload.consultations = workload_json["Consultations"].get<unsigned int>();
-    workload.total_hours = workload_json["TotalHours"].get<unsigned int>();
+    workload.lectures = ReadField<unsigned int>(workload_json, "lectures", "Lectures");
+    workload.practical_classes = ReadField<unsigned int>(workload_json, "practical_classes", "PracticalClasses");
+    workload.laboratory_classes = ReadField<unsigned int>(workload_json, "laboratory_classes", "LaboratoryClasses");
+    workload.seminars = ReadField<unsigned int>(workload_json, "seminars", "Seminars");
+    workload.consultations = ReadField<unsigned int>(workload_json, "consultations", "Consultations");
+    workload.total_hours = ReadField<unsigned int>(workload_json, "total_hours", "TotalHours");
 
     return workload;
 }
@@ -40,16 +70,16 @@ static models::Workload ParseWorkload(const json& workload_json)
 static json BuildWorkloadJson(const models::Workload& workload)
 {
     return {
-        {"Id", workload.id},
-        {"TeachersIds", workload.teacher_ids},
-        {"GroupIds", workload.group_ids},
-        {"DisciplineId", workload.discipline_id},
-        {"Lectures", workload.lectures},
-        {"PracticalClasses", workload.practical_classes},
-        {"LaboratoryClasses", workload.laboratory_classes},
-        {"Seminars", workload.seminars},
-        {"Consultations", workload.consultations},
-        {"TotalHours", workload.total_hours}
+        {"id", workload.id},
+        {"teacher_ids", workload.teacher_ids},
+        {"group_ids", workload.group_ids},
+        {"discipline_id", workload.discipline_id},
+        {"lectures", workload.lectures},
+        {"practical_classes", workload.practical_classes},
+        {"laboratory_classes", workload.laboratory_classes},
+        {"seminars", workload.seminars},
+        {"consultations", workload.consultations},
+        {"total_hours", workload.total_hours}
     };
 }
 
@@ -60,9 +90,9 @@ unsigned short GetLastWorkloadId()
 
     for (const auto& workload_json : workloads)
     {
-        if (workload_json.contains("Id"))
+        if (HasId(workload_json))
         {
-            max_id = std::max(max_id, workload_json["Id"].get<unsigned short>());
+            max_id = std::max(max_id, ReadId(workload_json));
         }
     }
 
@@ -74,7 +104,6 @@ bool SaveWorkload(models::Workload& workload)
     json workloads = storage::ReadJsonArray(workload_file_path);
 
     workload.id = GetLastWorkloadId() + 1;
-
     workloads.push_back(BuildWorkloadJson(workload));
 
     return storage::WriteJsonArray(workload_file_path, workloads);
@@ -87,7 +116,7 @@ std::vector<models::Workload> GetWorkloads()
 
     for (const auto& workload_json : workloads)
     {
-        if (!workload_json.contains("Id"))
+        if (!HasId(workload_json))
         {
             continue;
         }
@@ -104,12 +133,12 @@ std::optional<models::Workload> GetWorkloadById(unsigned short id)
 
     for (const auto& workload_json : workloads)
     {
-        if (!workload_json.contains("Id"))
+        if (!HasId(workload_json))
         {
             continue;
         }
 
-        if (workload_json["Id"].get<unsigned short>() == id)
+        if (ReadId(workload_json) == id)
         {
             return ParseWorkload(workload_json);
         }
@@ -125,7 +154,7 @@ bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_
 
     for (auto& workload_json : workloads)
     {
-        if (workload_json.contains("Id") && workload_json["Id"].get<unsigned short>() == id)
+        if (HasId(workload_json) && ReadId(workload_json) == id)
         {
             models::Workload workload_to_save = updated_workload;
             workload_to_save.id = id;
@@ -150,7 +179,7 @@ bool RemoveWorkloadById(const unsigned short& id)
 
     for (auto it = workloads.begin(); it != workloads.end(); ++it)
     {
-        if (it->contains("Id") && (*it)["Id"].get<unsigned short>() == id)
+        if (HasId(*it) && ReadId(*it) == id)
         {
             workloads.erase(it);
             was_removed = true;
