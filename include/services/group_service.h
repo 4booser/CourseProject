@@ -6,5 +6,7 @@
 namespace services
 {
     OperationResult ValidateGroup(const models::Group& group);
-    OperationResult CanDeleteGroup(unsigned short group_id);
+    OperationResult CreateGroup(models::Group& group);
+    OperationResult UpdateGroup(unsigned short group_id, const models::Group& group);
+    OperationResult DeleteGroup(unsigned short group_id);
 }
