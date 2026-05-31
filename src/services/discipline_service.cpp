@@ -20,7 +20,34 @@ namespace services
         return OperationResult::Ok();
     }
 
-    OperationResult CanDeleteDiscipline(unsigned short discipline_id)
+    OperationResult CreateDiscipline(models::Discipline& discipline)
+    {
+        OperationResult validation_result = ValidateDiscipline(discipline);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return SaveDiscipline(discipline);
+    }
+
+    OperationResult UpdateDiscipline(unsigned short discipline_id, const models::Discipline& discipline)
+    {
+        if (!GetDisciplineById(discipline_id).has_value())
+        {
+            return OperationResult::Fail("Дисциплiну з таким Id не знайдено.");
+        }
+
+        OperationResult validation_result = ValidateDiscipline(discipline);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return EditDisciplineById(discipline_id, discipline);
+    }
+
+    OperationResult DeleteDiscipline(unsigned short discipline_id)
     {
         if (!GetDisciplineById(discipline_id).has_value())
         {
@@ -29,9 +56,9 @@ namespace services
 
         if (HasWorkloadForDiscipline(discipline_id))
         {
-            return OperationResult::Fail("Операцiю заблоковано: дисциплiна використовується в навантаженнi.");
+            return OperationResult::Fail("Дисциплiна використовується в навантаженнi.");
         }
 
-        return OperationResult::Ok();
+        return RemoveDisciplineById(discipline_id);
     }
 }
