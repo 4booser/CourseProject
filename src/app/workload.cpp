@@ -4,30 +4,13 @@
 #include "common/operation_result.h"
 #include "ui/input.h"
 #include "ui/table.h"
+#include "utils/string_utils.h"
 #include "models.h"
 
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <optional>
-
-static std::string JoinIds(const std::vector<unsigned short>& ids)
-{
-    std::ostringstream stream;
-
-    for (std::size_t i = 0; i < ids.size(); ++i)
-    {
-        stream << ids[i];
-
-        if (i + 1 < ids.size())
-        {
-            stream << ",";
-        }
-    }
-
-    return stream.str();
-}
 
 static void ReadWorkloadFields(models::Workload& workload)
 {
@@ -87,8 +70,8 @@ void HandleWorkloadsGet()
     {
         ui::PrintRow(widths,
             workload.id,
-            JoinIds(workload.teacher_ids),
-            JoinIds(workload.group_ids),
+            utils::JoinIds(workload.teacher_ids),
+            utils::JoinIds(workload.group_ids),
             workload.discipline_id,
             workload.lectures,
             workload.practical_classes,
