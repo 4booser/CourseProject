@@ -1,64 +1,18 @@
 #include "repositories/discipline_repository.h"
+#include "storage/json_storage.h"
 #include <nlohmann/json.hpp>
-#include <fstream>
-#include <filesystem>
 #include <optional>
 #include <algorithm>
 #include "models.h"
 #include <vector>
 
 using json = nlohmann::json;
-namespace fs = std::filesystem;
 
 const std::string discipline_file_path = "Output/Disciplines.json";
 
-static json ReadDisciplinesJson()
-{
-    std::ifstream input_file(discipline_file_path);
-
-    if (!input_file.is_open())
-    {
-        return json::array();
-    }
-
-    json disciplines;
-
-    try
-    {
-        input_file >> disciplines;
-    }
-    catch (...)
-    {
-        return json::array();
-    }
-
-    if (!disciplines.is_array())
-    {
-        return json::array();
-    }
-
-    return disciplines;
-}
-
-static bool WriteDisciplinesJson(const json& disciplines)
-{
-    fs::path path(discipline_file_path);
-    fs::create_directories(path.parent_path());
-
-    std::ofstream output_file(discipline_file_path);
-
-    if (!output_file.is_open())
-    {
-        return false;
-    }
-
-    output_file << disciplines.dump(2);
-    return true;
-}
-
 unsigned short GetLastDisciplineId()
 {
-    json disciplines = ReadDisciplinesJson();
+    json disciplines = storage::ReadJsonArray(discipline_file_path);
     unsigned short max_id = 0;
 
     for (const auto& discipline_json : disciplines)
@@ -74,7 +28,7 @@ unsigned short GetLastDisciplineId()
 
 bool SaveDiscipline(models::Discipline& discipline)
 {
-    json disciplines = ReadDisciplinesJson();
+    json disciplines = storage::ReadJsonArray(discipline_file_path);
 
     discipline.id = GetLastDisciplineId() + 1;
 
@@ -86,13 +40,13 @@ bool SaveDiscipline(models::Discipline& discipline)
 
     disciplines.push_back(discipline_json);
 
-    return WriteDisciplinesJson(disciplines);
+    return storage::WriteJsonArray(discipline_file_path, disciplines);
 }
 
 std::vector<models::Discipline> GetDisciplines()
 {
     std::vector<models::Discipline> result;
-    json disciplines = ReadDisciplinesJson();
+    json disciplines = storage::ReadJsonArray(discipline_file_path);
 
     for (const auto& discipline_json : disciplines)
     {
@@ -114,7 +68,7 @@ std::vector<models::Discipline> GetDisciplines()
 
 std::optional<models::Discipline> GetDisciplineById(unsigned short id)
 {
-    json disciplines = ReadDisciplinesJson();
+    json disciplines = storage::ReadJsonArray(discipline_file_path);
 
     for (const auto& discipline_json : disciplines)
     {
@@ -139,7 +93,7 @@ std::optional<models::Discipline> GetDisciplineById(unsigned short id)
 
 bool EditDisciplineById(const unsigned short& id, const models::Discipline& updated_discipline)
 {
-    json disciplines = ReadDisciplinesJson();
+    json disciplines = storage::ReadJsonArray(discipline_file_path);
     bool was_updated = false;
 
     for (auto& discipline_json : disciplines)
@@ -158,12 +112,12 @@ bool EditDisciplineById(const unsigned short& id, const models::Discipline& upda
         return false;
     }
 
-    return WriteDisciplinesJson(disciplines);
+    return storage::WriteJsonArray(discipline_file_path, disciplines);
 }
 
 bool RemoveDisciplineById(const unsigned short& id)
 {
-    json disciplines = ReadDisciplinesJson();
+    json disciplines = storage::ReadJsonArray(discipline_file_path);
     bool was_removed = false;
 
     for (auto it = disciplines.begin(); it != disciplines.end(); ++it)
@@ -181,5 +135,5 @@ bool RemoveDisciplineById(const unsigned short& id)
         return false;
     }
 
-    return WriteDisciplinesJson(disciplines);
+    return storage::WriteJsonArray(discipline_file_path, disciplines);
 }
