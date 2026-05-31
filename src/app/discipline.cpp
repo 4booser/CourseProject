@@ -1,4 +1,5 @@
 #include "repositories/discipline_repository.h"
+#include "repositories/workload_repository.h"
 #include "headers/discipline.h"
 #include "models.h"
 
@@ -83,6 +84,12 @@ void HandleDisciplineEdit(const unsigned short& id)
 
 void HandleDisciplineDelete(const unsigned short& id)
 {
+    if (HasWorkloadForDiscipline(id))
+    {
+        std::cout << "Operation blocked: discipline has workloads.\n";
+        return;
+    }
+
     if (!RemoveDisciplineById(id))
     {
         std::cout << "Not found.\n";
