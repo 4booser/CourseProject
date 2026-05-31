@@ -25,7 +25,34 @@ namespace services
         return OperationResult::Ok();
     }
 
-    OperationResult CanDeleteTeacher(unsigned short teacher_id)
+    OperationResult CreateTeacher(models::Teacher& teacher)
+    {
+        OperationResult validation_result = ValidateTeacher(teacher);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return SaveTeacher(teacher);
+    }
+
+    OperationResult UpdateTeacher(unsigned short teacher_id, const models::Teacher& teacher)
+    {
+        if (!GetTeacherById(teacher_id).has_value())
+        {
+            return OperationResult::Fail("Викладача з таким Id не знайдено.");
+        }
+
+        OperationResult validation_result = ValidateTeacher(teacher);
+        if (!validation_result.success)
+        {
+            return validation_result;
+        }
+
+        return EditTeacherById(teacher_id, teacher);
+    }
+
+    OperationResult DeleteTeacher(unsigned short teacher_id)
     {
         if (!GetTeacherById(teacher_id).has_value())
         {
@@ -34,9 +61,9 @@ namespace services
 
         if (HasWorkloadForTeacher(teacher_id))
         {
-            return OperationResult::Fail("Неможливо видалити викладача: вiн використовується в навантаженнi.");
+            return OperationResult::Fail("Викладач використовується в навантаженнi.");
         }
 
-        return OperationResult::Ok();
+        return DeleteTeacherById(teacher_id);
     }
 }
