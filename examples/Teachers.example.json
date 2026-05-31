@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "full_name": "John Smith",
+    "digital_commission": "Software Engineering",
+    "quota": 120
+  },
+  {
+    "id": 2,
+    "full_name": "Anna Brown",
+    "digital_commission": "Computer Science",
+    "quota": 100
+  }
+]
