@@ -2,12 +2,13 @@
 
 #include "repositories/discipline_repository.h"
 #include "repositories/workload_repository.h"
+#include "utils/string_utils.h"
 
 namespace services
 {
     OperationResult ValidateDiscipline(const models::Discipline& discipline)
     {
-        if (discipline.name.empty())
+        if (utils::IsBlank(discipline.name))
         {
             return OperationResult::Fail("Назва дисциплiни не може бути порожньою.");
         }
