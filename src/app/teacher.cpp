@@ -2,11 +2,12 @@
 #include "repositories/workload_repository.h"
 #include "headers/teacher.h"
 #include "ui/input.h"
+#include "ui/table.h"
 #include "models.h"
 #include <string>
 #include <iostream>
 #include <optional>
-#include <iomanip>
+#include <vector>
 
 void HandleTeacherCreate(){
     models::Teacher teacher{};
@@ -26,14 +27,11 @@ void HandleTeacherCreate(){
 }
 
 void HandleTeachersPrint(){
+    const std::vector<int> widths {5, 25, 20, 10};
+
     std::cout << std::endl;
-    std::cout << std::left
-        << std::setw(5)  << "ID"
-        << std::setw(25) << "Full name"
-        << std::setw(20) << "Commission"
-        << std::setw(10) << "Quota"
-        << std::endl;
-    std::cout << std::string(60, '-') << std::endl;
+    ui::PrintRow(widths, "ID", "Full name", "Commission", "Quota");
+    ui::PrintSeparator(60);
 
     for (unsigned short i = 1; i <= GetLastTeacherId(); i++)
     {
@@ -41,12 +39,7 @@ void HandleTeachersPrint(){
 
         if (!teacher.has_value()) { continue; }
 
-        std::cout << std::left
-            << std::setw(5) << teacher->id
-            << std::setw(25) << teacher->full_name
-            << std::setw(20) << teacher->digital_commission
-            << std::setw(10) << teacher->quota
-            << std::endl;
+        ui::PrintRow(widths, teacher->id, teacher->full_name, teacher->digital_commission, teacher->quota);
     }
 }
 
