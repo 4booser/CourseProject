@@ -2,17 +2,18 @@
 
 #include "repositories/teacher_repository.h"
 #include "repositories/workload_repository.h"
+#include "utils/string_utils.h"
 
 namespace services
 {
     OperationResult ValidateTeacher(const models::Teacher& teacher)
     {
-        if (teacher.full_name.empty())
+        if (utils::IsBlank(teacher.full_name))
         {
             return OperationResult::Fail("ПIБ викладача не може бути порожнiм.");
         }
 
-        if (teacher.digital_commission.empty())
+        if (utils::IsBlank(teacher.digital_commission))
         {
             return OperationResult::Fail("Цифрова комiсiя не може бути порожньою.");
         }
