@@ -20,17 +20,10 @@ void HandleDisciplineCreate()
     discipline.name = ui::ReadLine("Введiть назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть кiлькiсть годин дисциплiни: ");
 
-    OperationResult validation_result = services::ValidateDiscipline(discipline);
-    if (!validation_result.success)
+    OperationResult create_result = services::CreateDiscipline(discipline);
+    if (!create_result.success)
     {
-        std::cout << validation_result.message << '\n';
-        return;
-    }
-
-    OperationResult save_result = SaveDiscipline(discipline);
-    if (!save_result.success)
-    {
-        std::cout << save_result.message << '\n';
+        std::cout << create_result.message << '\n';
         return;
     }
 
@@ -53,14 +46,6 @@ void HandleDisciplinesGet()
 
 void HandleDisciplineEdit(const unsigned short& id)
 {
-    std::optional<models::Discipline> existing = GetDisciplineById(id);
-
-    if (!existing.has_value())
-    {
-        std::cout << "Дисциплiну з таким Id не знайдено.\n";
-        return;
-    }
-
     models::Discipline discipline{};
 
     ui::ClearInputLine();
@@ -68,17 +53,10 @@ void HandleDisciplineEdit(const unsigned short& id)
     discipline.name = ui::ReadLine("Введiть нову назву дисциплiни: ");
     discipline.quota = ui::ReadUnsignedInt("Введiть нову кiлькiсть годин дисциплiни: ");
 
-    OperationResult validation_result = services::ValidateDiscipline(discipline);
-    if (!validation_result.success)
+    OperationResult update_result = services::UpdateDiscipline(id, discipline);
+    if (!update_result.success)
     {
-        std::cout << validation_result.message << '\n';
-        return;
-    }
-
-    OperationResult edit_result = EditDisciplineById(id, discipline);
-    if (!edit_result.success)
-    {
-        std::cout << edit_result.message << '\n';
+        std::cout << update_result.message << '\n';
         return;
     }
 
@@ -87,17 +65,10 @@ void HandleDisciplineEdit(const unsigned short& id)
 
 void HandleDisciplineDelete(const unsigned short& id)
 {
-    OperationResult can_delete_result = services::CanDeleteDiscipline(id);
-    if (!can_delete_result.success)
+    OperationResult delete_result = services::DeleteDiscipline(id);
+    if (!delete_result.success)
     {
-        std::cout << can_delete_result.message << '\n';
-        return;
-    }
-
-    OperationResult remove_result = RemoveDisciplineById(id);
-    if (!remove_result.success)
-    {
-        std::cout << remove_result.message << '\n';
+        std::cout << delete_result.message << '\n';
         return;
     }
 
