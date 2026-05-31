@@ -11,3 +11,7 @@ std::vector<models::Workload> GetWorkloads();
 std::optional<models::Workload> GetWorkloadById(unsigned short id);
 bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_workload);
 bool RemoveWorkloadById(const unsigned short& id);
+
+bool HasWorkloadForTeacher(unsigned short teacher_id);
+bool HasWorkloadForGroup(unsigned short group_id);
+bool HasWorkloadForDiscipline(unsigned short discipline_id);
