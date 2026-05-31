@@ -62,7 +62,16 @@ static models::Workload ParseWorkload(const json& workload_json)
     workload.id = workload_json["Id"].get<unsigned short>();
     workload.teacher_ids = workload_json["TeachersIds"].get<std::vector<unsigned short>>();
     workload.group_ids = workload_json["GroupIds"].get<std::vector<unsigned short>>();
-    workload.subject_id = workload_json["SubjectId"].get<unsigned short>();
+
+    if (workload_json.contains("DisciplineId"))
+    {
+        workload.discipline_id = workload_json["DisciplineId"].get<unsigned short>();
+    }
+    else if (workload_json.contains("SubjectId"))
+    {
+        workload.discipline_id = workload_json["SubjectId"].get<unsigned short>();
+    }
+
     workload.lectures = workload_json["Lectures"].get<unsigned int>();
     workload.practical_classes = workload_json["PracticalClasses"].get<unsigned int>();
     workload.laboratory_classes = workload_json["LaboratoryClasses"].get<unsigned int>();
@@ -79,7 +88,7 @@ static json BuildWorkloadJson(const models::Workload& workload)
         {"Id", workload.id},
         {"TeachersIds", workload.teacher_ids},
         {"GroupIds", workload.group_ids},
-        {"SubjectId", workload.subject_id},
+        {"DisciplineId", workload.discipline_id},
         {"Lectures", workload.lectures},
         {"PracticalClasses", workload.practical_classes},
         {"LaboratoryClasses", workload.laboratory_classes},
@@ -92,20 +101,17 @@ static json BuildWorkloadJson(const models::Workload& workload)
 unsigned short GetLastWorkloadId()
 {
     json workloads = ReadWorkloadsJson();
+    unsigned short max_id = 0;
 
-    if (workloads.empty())
+    for (const auto& workload_json : workloads)
     {
-        return 0;
+        if (workload_json.contains("Id"))
+        {
+            max_id = std::max(max_id, workload_json["Id"].get<unsigned short>());
+        }
     }
 
-    const auto& last_workload = workloads.back();
-
-    if (!last_workload.contains("Id"))
-    {
-        return 0;
-    }
-
-    return last_workload["Id"].get<unsigned short>();
+    return max_id;
 }
 
 bool SaveWorkload(models::Workload& workload)
