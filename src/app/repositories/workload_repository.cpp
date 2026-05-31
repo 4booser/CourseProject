@@ -1,59 +1,14 @@
 #include "repositories/workload_repository.h"
+#include "storage/json_storage.h"
 #include <nlohmann/json.hpp>
-#include <fstream>
-#include <filesystem>
 #include <optional>
+#include <algorithm>
 #include "models.h"
 #include <vector>
 
 using json = nlohmann::json;
-namespace fs = std::filesystem;
 
 const std::string workload_file_path = "Output/Workloads.json";
-
-static json ReadWorkloadsJson()
-{
-    std::ifstream input_file(workload_file_path);
-
-    if (!input_file.is_open())
-    {
-        return json::array();
-    }
-
-    json workloads;
-
-    try
-    {
-        input_file >> workloads;
-    }
-    catch (...)
-    {
-        return json::array();
-    }
-
-    if (!workloads.is_array())
-    {
-        return json::array();
-    }
-
-    return workloads;
-}
-
-static bool WriteWorkloadsJson(const json& workloads)
-{
-    fs::path path(workload_file_path);
-    fs::create_directories(path.parent_path());
-
-    std::ofstream output_file(workload_file_path);
-
-    if (!output_file.is_open())
-    {
-        return false;
-    }
-
-    output_file << workloads.dump(2);
-    return true;
-}
 
 static models::Workload ParseWorkload(const json& workload_json)
 {
@@ -100,7 +55,7 @@ static json BuildWorkloadJson(const models::Workload& workload)
 
 unsigned short GetLastWorkloadId()
 {
-    json workloads = ReadWorkloadsJson();
+    json workloads = storage::ReadJsonArray(workload_file_path);
     unsigned short max_id = 0;
 
     for (const auto& workload_json : workloads)
@@ -116,19 +71,19 @@ unsigned short GetLastWorkloadId()
 
 bool SaveWorkload(models::Workload& workload)
 {
-    json workloads = ReadWorkloadsJson();
+    json workloads = storage::ReadJsonArray(workload_file_path);
 
     workload.id = GetLastWorkloadId() + 1;
 
     workloads.push_back(BuildWorkloadJson(workload));
 
-    return WriteWorkloadsJson(workloads);
+    return storage::WriteJsonArray(workload_file_path, workloads);
 }
 
 std::vector<models::Workload> GetWorkloads()
 {
     std::vector<models::Workload> result;
-    json workloads = ReadWorkloadsJson();
+    json workloads = storage::ReadJsonArray(workload_file_path);
 
     for (const auto& workload_json : workloads)
     {
@@ -145,7 +100,7 @@ std::vector<models::Workload> GetWorkloads()
 
 std::optional<models::Workload> GetWorkloadById(unsigned short id)
 {
-    json workloads = ReadWorkloadsJson();
+    json workloads = storage::ReadJsonArray(workload_file_path);
 
     for (const auto& workload_json : workloads)
     {
@@ -165,7 +120,7 @@ std::optional<models::Workload> GetWorkloadById(unsigned short id)
 
 bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_workload)
 {
-    json workloads = ReadWorkloadsJson();
+    json workloads = storage::ReadJsonArray(workload_file_path);
     bool was_updated = false;
 
     for (auto& workload_json : workloads)
@@ -185,12 +140,12 @@ bool EditWorkloadById(const unsigned short& id, const models::Workload& updated_
         return false;
     }
 
-    return WriteWorkloadsJson(workloads);
+    return storage::WriteJsonArray(workload_file_path, workloads);
 }
 
 bool RemoveWorkloadById(const unsigned short& id)
 {
-    json workloads = ReadWorkloadsJson();
+    json workloads = storage::ReadJsonArray(workload_file_path);
     bool was_removed = false;
 
     for (auto it = workloads.begin(); it != workloads.end(); ++it)
@@ -208,5 +163,5 @@ bool RemoveWorkloadById(const unsigned short& id)
         return false;
     }
 
-    return WriteWorkloadsJson(workloads);
+    return storage::WriteJsonArray(workload_file_path, workloads);
 }
