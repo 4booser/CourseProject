@@ -17,6 +17,7 @@ add_executable(course_project
     src/app/repositories/group_repository.cpp
     src/app/repositories/discipline_repository.cpp
     src/app/repositories/workload_repository.cpp
+    src/storage/json_storage.cpp
 )
 
 target_include_directories(course_project PRIVATE
