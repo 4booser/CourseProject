@@ -10,7 +10,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <optional>
 
 static void ReadWorkloadFields(models::Workload& workload)
 {
@@ -39,18 +38,11 @@ void HandleWorkloadCreate()
 
     ReadWorkloadFields(workload);
 
-    OperationResult validation_result = services::ValidateWorkload(workload);
-    if (!validation_result.success)
+    OperationResult create_result = services::CreateWorkload(workload);
+    if (!create_result.success)
     {
-        std::cout << validation_result.message << '\n';
+        std::cout << create_result.message << '\n';
         std::cout << "Навантаження не збережено.\n";
-        return;
-    }
-
-    OperationResult save_result = SaveWorkload(workload);
-    if (!save_result.success)
-    {
-        std::cout << save_result.message << '\n';
         return;
     }
 
@@ -84,29 +76,14 @@ void HandleWorkloadsGet()
 
 void HandleWorkloadEdit(const unsigned short& id)
 {
-    std::optional<models::Workload> existing_workload = GetWorkloadById(id);
-
-    if (!existing_workload.has_value())
-    {
-        std::cout << "Навантаження не знайдено.\n";
-        return;
-    }
-
     models::Workload updated_workload{};
     ReadWorkloadFields(updated_workload);
 
-    OperationResult validation_result = services::ValidateWorkload(updated_workload, id);
-    if (!validation_result.success)
+    OperationResult update_result = services::UpdateWorkload(id, updated_workload);
+    if (!update_result.success)
     {
-        std::cout << validation_result.message << '\n';
+        std::cout << update_result.message << '\n';
         std::cout << "Навантаження не оновлено.\n";
-        return;
-    }
-
-    OperationResult edit_result = EditWorkloadById(id, updated_workload);
-    if (!edit_result.success)
-    {
-        std::cout << edit_result.message << '\n';
         return;
     }
 
@@ -115,10 +92,10 @@ void HandleWorkloadEdit(const unsigned short& id)
 
 void HandleWorkloadDelete(const unsigned short& id)
 {
-    OperationResult remove_result = RemoveWorkloadById(id);
-    if (!remove_result.success)
+    OperationResult delete_result = services::DeleteWorkload(id);
+    if (!delete_result.success)
     {
-        std::cout << remove_result.message << '\n';
+        std::cout << delete_result.message << '\n';
         return;
     }
 
