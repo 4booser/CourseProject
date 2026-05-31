@@ -69,14 +69,19 @@ unsigned short GetLastTeacherId()
     return max_id;
 }
 
-bool SaveTeacher(models::Teacher& teacher)
+OperationResult SaveTeacher(models::Teacher& teacher)
 {
     json teachers = storage::ReadJsonArray(file_path);
 
     teacher.id = GetLastTeacherId() + 1;
     teachers.push_back(BuildTeacherJson(teacher));
 
-    return storage::WriteJsonArray(file_path, teachers);
+    if (!storage::WriteJsonArray(file_path, teachers))
+    {
+        return OperationResult::Fail("Не вдалося записати файл викладачiв.");
+    }
+
+    return OperationResult::Ok();
 }
 
 std::optional<models::Teacher> GetTeacherById(unsigned short id)
@@ -99,7 +104,7 @@ std::optional<models::Teacher> GetTeacherById(unsigned short id)
     return std::nullopt;
 }
 
-bool EditTeacherById(const unsigned short& id, const models::Teacher& updated_teacher)
+OperationResult EditTeacherById(const unsigned short& id, const models::Teacher& updated_teacher)
 {
     json teachers = storage::ReadJsonArray(file_path);
     bool was_updated = false;
@@ -118,13 +123,18 @@ bool EditTeacherById(const unsigned short& id, const models::Teacher& updated_te
 
     if (!was_updated)
     {
-        return false;
+        return OperationResult::Fail("Викладача з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(file_path, teachers);
+    if (!storage::WriteJsonArray(file_path, teachers))
+    {
+        return OperationResult::Fail("Не вдалося записати файл викладачiв.");
+    }
+
+    return OperationResult::Ok();
 }
 
-bool DeleteTeacherById(const unsigned short& id)
+OperationResult DeleteTeacherById(const unsigned short& id)
 {
     json teachers = storage::ReadJsonArray(file_path);
     bool was_deleted = false;
@@ -141,8 +151,13 @@ bool DeleteTeacherById(const unsigned short& id)
 
     if (!was_deleted)
     {
-        return false;
+        return OperationResult::Fail("Викладача з таким Id не знайдено.");
     }
 
-    return storage::WriteJsonArray(file_path, teachers);
+    if (!storage::WriteJsonArray(file_path, teachers))
+    {
+        return OperationResult::Fail("Не вдалося записати файл викладачiв.");
+    }
+
+    return OperationResult::Ok();
 }
