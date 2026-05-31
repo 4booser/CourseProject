@@ -5,7 +5,7 @@
 #include <iostream>
 #include <optional>
 #include <iomanip>
-
+#include <limits>
 
 void HandleTeacherCreate(){
     models::Teacher teacher{};
@@ -28,6 +28,7 @@ void HandleTeacherCreate(){
 
     if(!SaveTeacher(teacher)){
         std:: cout << "Сталася помилка при збереженнi.";
+        return;
     }
 
     std::cout << "\nВикладача збережено.\n";
@@ -37,7 +38,7 @@ void HandleTeachersPrint(){
     std::cout << std::endl;
     std::cout << std::left
         << std::setw(5)  << "ID"
-        << std::setw(20) << "Full name"
+        << std::setw(25) << "Full name"
         << std::setw(20) << "Commission"
         << std::setw(10) << "Quota"
         << std::endl;
@@ -56,4 +57,52 @@ void HandleTeachersPrint(){
             << std::setw(10) << teacher->quota
             << std::endl;
     }
+}
+
+void HandleTeacherEdit(const unsigned short& id)
+{
+    std::optional<models::Teacher> existing_teacher = GetTeacherById(id);
+
+    if (!existing_teacher.has_value())
+    {
+        std::cout << "Викладача з таким Id не знайдено.\n";
+        return;
+    }
+
+    models::Teacher updated_teacher{};
+
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::cout << "Введiть нове ПIБ: ";
+    std::getline(std::cin, updated_teacher.full_name);
+
+    std::cout << "Введiть нову цифрову комiсiю: ";
+    std::getline(std::cin, updated_teacher.digital_commission);
+
+    std::cout << "Введiть нову максимальну кiлькiсть годин: ";
+    while (!(std::cin >> updated_teacher.quota))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Помилка. Введiть число для годин: ";
+    }
+
+    if (!EditTeacherById(id, updated_teacher))
+    {
+        std::cout << "Сталася помилка при редагуваннi викладача.\n";
+        return;
+    }
+
+    std::cout << "Викладача оновлено.\n";
+}
+
+void HandleTeacherDelete(const unsigned short& id)
+{
+    if (!DeleteTeacherById(id))
+    {
+        std::cout << "Викладача з таким Id не знайдено або сталася помилка.\n";
+        return;
+    }
+
+    std::cout << "Викладача видалено.\n";
 }
