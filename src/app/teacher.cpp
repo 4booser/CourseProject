@@ -4,6 +4,7 @@
 #include "ui/input.h"
 #include "ui/table.h"
 #include "models.h"
+#include "common/operation_result.h"
 #include <string>
 #include <iostream>
 #include <optional>
@@ -18,8 +19,9 @@ void HandleTeacherCreate(){
     teacher.digital_commission = ui::ReadLine("Введiть цифрову комiсiю: ");
     teacher.quota = ui::ReadUnsignedInt("Введiть максимальну кiлькiсть годин: ");
 
-    if(!SaveTeacher(teacher)){
-        std:: cout << "Сталася помилка при збереженнi.";
+    OperationResult save_result = SaveTeacher(teacher);
+    if(!save_result.success){
+        std::cout << save_result.message << '\n';
         return;
     }
 
@@ -61,9 +63,10 @@ void HandleTeacherEdit(const unsigned short& id)
     updated_teacher.digital_commission = ui::ReadLine("Введiть нову цифрову комiсiю: ");
     updated_teacher.quota = ui::ReadUnsignedInt("Введiть нову максимальну кiлькiсть годин: ");
 
-    if (!EditTeacherById(id, updated_teacher))
+    OperationResult edit_result = EditTeacherById(id, updated_teacher);
+    if (!edit_result.success)
     {
-        std::cout << "Сталася помилка при редагуваннi викладача.\n";
+        std::cout << edit_result.message << '\n';
         return;
     }
 
@@ -78,9 +81,10 @@ void HandleTeacherDelete(const unsigned short& id)
         return;
     }
 
-    if (!DeleteTeacherById(id))
+    OperationResult delete_result = DeleteTeacherById(id);
+    if (!delete_result.success)
     {
-        std::cout << "Викладача з таким Id не знайдено або сталася помилка.\n";
+        std::cout << delete_result.message << '\n';
         return;
     }
 
