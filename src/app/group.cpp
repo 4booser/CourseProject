@@ -4,6 +4,7 @@
 #include "ui/input.h"
 #include "ui/table.h"
 #include "models.h"
+#include "common/operation_result.h"
 #include <iostream>
 #include <optional>
 #include <string>
@@ -20,9 +21,10 @@ void HandleGroupCreate()
     ui::ClearInputLine();
     group.speciality = ui::ReadLine("Введiть спецiальнiсть: ");
 
-    if (!SaveGroup(group))
+    OperationResult save_result = SaveGroup(group);
+    if (!save_result.success)
     {
-        std::cout << "Сталася помилка при збереженнi групи.\n";
+        std::cout << save_result.message << '\n';
         return;
     }
 
@@ -63,9 +65,10 @@ void HandleGroupEdit(const unsigned short& id)
     ui::ClearInputLine();
     updated_group.speciality = ui::ReadLine("Введiть нову спецiальнiсть: ");
 
-    if (!EditGroupById(id, updated_group))
+    OperationResult edit_result = EditGroupById(id, updated_group);
+    if (!edit_result.success)
     {
-        std::cout << "Сталася помилка при редагуваннi групи.\n";
+        std::cout << edit_result.message << '\n';
         return;
     }
 
@@ -80,9 +83,10 @@ void HandleGroupDelete(const unsigned short& id)
         return;
     }
 
-    if (!DeleteGroupById(id))
+    OperationResult delete_result = DeleteGroupById(id);
+    if (!delete_result.success)
     {
-        std::cout << "Групу з таким Id не знайдено або сталася помилка.\n";
+        std::cout << delete_result.message << '\n';
         return;
     }
 
