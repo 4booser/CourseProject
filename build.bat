@@ -28,13 +28,33 @@ if %errorlevel% equ 0 (
     goto check_result
 )
 
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+if exist "%VSWHERE%" (
+    for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
+        set "VSINSTALL=%%i"
+    )
+
+    if defined VSINSTALL (
+        if exist "!VSINSTALL!\Common7\Tools\VsDevCmd.bat" (
+            echo Compiler: MSVC cl.exe from Visual Studio
+            call "!VSINSTALL!\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64 > nul
+            cl /std:c++20 /EHsc /W4 /utf-8 /Iinclude !SOURCES! /Fe:app.exe
+            goto check_result
+        )
+    )
+)
+
 echo Compiler was not found.
 echo.
-echo Install one of these options:
-echo 1. MinGW-w64 / MSYS2 and add g++ to PATH
-echo 2. Visual Studio Build Tools and run this script from Developer Command Prompt
+echo This script can build the project only if a C++ compiler exists on this PC.
 echo.
-echo If you only need to run the project, use prebuilt app.exe instead of build.bat.
+echo For fully automatic launch on Windows, put a prebuilt app.exe next to run.bat.
+echo Then the user only needs to run run.bat or app.exe.
+echo.
+echo To build from source on this PC, install one option:
+echo 1. Visual Studio Installer - Desktop development with C++
+echo 2. MSYS2 / MinGW-w64 with g++ added to PATH
+echo.
 pause
 exit /b 1
 
