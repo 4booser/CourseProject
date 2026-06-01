@@ -1,0 +1,86 @@
+CourseProject/
+├── include/
+│   ├── common/
+│   │   └── operation_result.h
+│   │
+│   ├── headers/
+│   │   ├── teacher.h
+│   │   ├── discipline.h
+│   │   ├── group.h
+│   │   └── workload.h
+│   │
+│   ├── repositories/
+│   │   ├── teacher_repository.h
+│   │   ├── discipline_repository.h
+│   │   ├── group_repository.h
+│   │   └── workload_repository.h
+│   │
+│   ├── services/
+│   │   ├── teacher_service.h
+│   │   ├── discipline_service.h
+│   │   ├── group_service.h
+│   │   └── workload_service.h
+│   │
+│   ├── storage/
+│   │   └── json_storage.h
+│   │
+│   ├── ui/
+│   │   ├── input.h
+│   │   ├── menu_handlers.h
+│   │   ├── search.h
+│   │   └── table.h
+│   │
+│   ├── utils/
+│   │   └── string_utils.h
+│   │
+│   ├── nlohmann/
+│   │   └── json.hpp
+│   │
+│   ├── models.h
+│   └── ui.h
+│
+├── src/
+│   ├── app/
+│   │   ├── repositories/
+│   │   │   ├── teacher_repository.cpp
+│   │   │   ├── discipline_repository.cpp
+│   │   │   ├── group_repository.cpp
+│   │   │   └── workload_repository.cpp
+│   │   │
+│   │   ├── teacher.cpp
+│   │   ├── discipline.cpp
+│   │   ├── group.cpp
+│   │   └── workload.cpp
+│   │
+│   ├── services/
+│   │   ├── teacher_service.cpp
+│   │   ├── discipline_service.cpp
+│   │   ├── group_service.cpp
+│   │   └── workload_service.cpp
+│   │
+│   ├── storage/
+│   │   └── json_storage.cpp
+│   │
+│   ├── ui/
+│   │   ├── input.cpp
+│   │   ├── menu_handlers.cpp
+│   │   └── search.cpp
+│   │
+│   ├── utils/
+│   │   └── string_utils.cpp
+│   │
+│   ├── main.cpp
+│   └── ui.cpp
+│
+├── Output/
+│   ├── Teachers.json
+│   ├── Disciplines.json
+│   ├── Groups.json
+│   └── Workloads.json
+│
+├── CMakeLists.txt
+├── build.sh
+├── build.bat
+├── run.sh
+├── run.bat
+└── README.md
