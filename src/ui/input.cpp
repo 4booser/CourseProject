@@ -5,8 +5,113 @@
 #include <sstream>
 #include <string>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <vector>
+#endif
+
 namespace
 {
+#ifdef _WIN32
+    std::wstring Utf8ToWide(const std::string& value)
+    {
+        if (value.empty())
+        {
+            return L"";
+        }
+
+        int size = MultiByteToWideChar(CP_UTF8, 0, value.data(), static_cast<int>(value.size()), nullptr, 0);
+        if (size <= 0)
+        {
+            return L"";
+        }
+
+        std::wstring result(static_cast<std::size_t>(size), L'\0');
+        MultiByteToWideChar(CP_UTF8, 0, value.data(), static_cast<int>(value.size()), result.data(), size);
+        return result;
+    }
+
+    std::string WideToUtf8(const std::wstring& value)
+    {
+        if (value.empty())
+        {
+            return "";
+        }
+
+        int size = WideCharToMultiByte(CP_UTF8, 0, value.data(), static_cast<int>(value.size()), nullptr, 0, nullptr, nullptr);
+        if (size <= 0)
+        {
+            return "";
+        }
+
+        std::string result(static_cast<std::size_t>(size), '\0');
+        WideCharToMultiByte(CP_UTF8, 0, value.data(), static_cast<int>(value.size()), result.data(), size, nullptr, nullptr);
+        return result;
+    }
+
+    bool IsConsoleInput()
+    {
+        HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
+        if (input == INVALID_HANDLE_VALUE || input == nullptr)
+        {
+            return false;
+        }
+
+        DWORD mode = 0;
+        return GetConsoleMode(input, &mode) != 0;
+    }
+
+    void WriteUtf8Prompt(const std::string& prompt)
+    {
+        HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD mode = 0;
+
+        if (output != INVALID_HANDLE_VALUE && output != nullptr && GetConsoleMode(output, &mode) != 0)
+        {
+            std::wstring wide_prompt = Utf8ToWide(prompt);
+            DWORD written = 0;
+            WriteConsoleW(output, wide_prompt.data(), static_cast<DWORD>(wide_prompt.size()), &written, nullptr);
+            return;
+        }
+
+        std::cout << prompt;
+    }
+
+    std::string ReadConsoleLineUtf8(const std::string& prompt)
+    {
+        WriteUtf8Prompt(prompt);
+
+        HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
+        std::wstring result;
+        wchar_t buffer[512];
+
+        while (true)
+        {
+            DWORD read = 0;
+            if (!ReadConsoleW(input, buffer, static_cast<DWORD>(std::size(buffer) - 1), &read, nullptr))
+            {
+                return "";
+            }
+
+            buffer[read] = L'\0';
+            result.append(buffer, buffer + read);
+
+            if (!result.empty() && (result.back() == L'\n' || result.back() == L'\r'))
+            {
+                break;
+            }
+        }
+
+        while (!result.empty() && (result.back() == L'\n' || result.back() == L'\r'))
+        {
+            result.pop_back();
+        }
+
+        return WideToUtf8(result);
+    }
+#endif
+
     bool TryParseUnsignedShort(const std::string& token, unsigned short& value)
     {
         if (token.empty())
@@ -50,6 +155,13 @@ namespace ui
 
     std::string ReadLine(const std::string& prompt)
     {
+#ifdef _WIN32
+        if (IsConsoleInput())
+        {
+            return ReadConsoleLineUtf8(prompt);
+        }
+#endif
+
         std::string value;
 
         std::cout << prompt;
