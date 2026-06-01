@@ -6,6 +6,9 @@
 #include <string>
 
 #ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <vector>
@@ -131,7 +134,7 @@ namespace
         {
             unsigned long parsed_value = std::stoul(token);
 
-            if (parsed_value > std::numeric_limits<unsigned short>::max())
+            if (parsed_value > (std::numeric_limits<unsigned short>::max)())
             {
                 return false;
             }
@@ -150,7 +153,7 @@ namespace ui
 {
     void ClearInputLine()
     {
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
     }
 
     std::string ReadLine(const std::string& prompt)
@@ -174,13 +177,21 @@ namespace ui
     {
         unsigned int value = 0;
 
+#ifdef _WIN32
+        WriteUtf8Prompt(prompt);
+#else
         std::cout << prompt;
+#endif
 
         while (!(std::cin >> value))
         {
             std::cin.clear();
             ClearInputLine();
+#ifdef _WIN32
+            WriteUtf8Prompt("Помилка. Введiть число: ");
+#else
             std::cout << "Помилка. Введiть число: ";
+#endif
         }
 
         return value;
@@ -190,13 +201,21 @@ namespace ui
     {
         unsigned short value = 0;
 
+#ifdef _WIN32
+        WriteUtf8Prompt(prompt);
+#else
         std::cout << prompt;
+#endif
 
         while (!(std::cin >> value))
         {
             std::cin.clear();
             ClearInputLine();
+#ifdef _WIN32
+            WriteUtf8Prompt("Помилка. Введiть число: ");
+#else
             std::cout << "Помилка. Введiть число: ";
+#endif
         }
 
         return value;
@@ -207,10 +226,7 @@ namespace ui
         while (true)
         {
             std::vector<unsigned short> ids;
-            std::string line;
-
-            std::cout << prompt;
-            std::getline(std::cin, line);
+            std::string line = ReadLine(prompt);
 
             std::istringstream stream(line);
             std::string token;
@@ -234,7 +250,11 @@ namespace ui
                 return ids;
             }
 
+#ifdef _WIN32
+            WriteUtf8Prompt("Помилка. Введiть Id числами через пробiл.\n");
+#else
             std::cout << "Помилка. Введiть Id числами через пробiл.\n";
+#endif
         }
     }
 }
